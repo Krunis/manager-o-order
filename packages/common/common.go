@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 type Lifecycle struct {
@@ -76,4 +77,21 @@ func ConnectToDB(ctx context.Context, dbConnectionString string) (*pgxpool.Pool,
 			return nil, ctx.Err()
 		}
 	}
+}
+
+func ConnectToRedis(ctx context.Context) (*redis.Client, error) {
+	redisPort := os.Getenv("REDIS_PORT")
+
+	redisDB := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("redis:%s", redisPort),
+		DB:   0,
+	})
+
+	if err := redisDB.Ping(ctx).Err(); err != nil {
+		return nil, fmt.Errorf("failed to connect redis db: %s", err)
+	}
+
+	log.Println("Connected to Redis")
+
+	return redisDB, nil
 }
