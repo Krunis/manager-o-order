@@ -1,6 +1,8 @@
 package apigateway
 
 import (
+	"encoding/json"
+	"log"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -17,7 +19,6 @@ func NewSaramaProducer(port string) (sarama.SyncProducer, error){
 	config.Producer.Retry.Backoff = 100 * time.Millisecond
 
 	config.Producer.Return.Successes = true
-	config.Producer.Return.Errors = true
 
 	config.Producer.Partitioner = sarama.NewHashPartitioner
 
@@ -29,4 +30,29 @@ func NewSaramaProducer(port string) (sarama.SyncProducer, error){
 	config.Net.WriteTimeout = 30 * time.Second
 
 	return sarama.NewSyncProducer([]string{port}, config)
+}
+
+func (g *GatewayServer) sendInKafka(order *Order) error{
+	key := sarama.ByteEncoder([]byte(order.IdempotencyKey))
+
+	valueBytes, err := json.Marshal(order)
+	if err != nil{
+		return err
+	}
+
+	value := sarama.ByteEncoder(valueBytes)	
+
+	part, offset, err := g.saramaProducer.SendMessage(&sarama.ProducerMessage{
+		Topic: "orders-new",
+		Key: key,
+		Value: value,
+	})
+	if err != nil{
+		log.Printf("Failed to sent: %s", err)
+		return err
+	}
+
+	log.Printf("Sent in %d partition, %d offset", part, offset)
+
+	return nil
 }
