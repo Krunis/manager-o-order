@@ -154,11 +154,6 @@ func (g *GatewayServer) NewOrderHandler(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
-		if err := g.sendInKafka(order); err != nil{
-			http.Error(w, "unknown error", http.StatusInternalServerError)
-			return
-		}
-
 		resp := struct{
 			OrderId string `json:"order_id"`
 			Status string `json:"status"`
