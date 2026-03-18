@@ -2,26 +2,55 @@ package apigateway
 
 import (
 	"context"
+	"encoding/json"
+	"log"
 
 	"github.com/redis/go-redis/v9"
 )
 
-func (g *GatewayServer) sendInPostgres(ctx context.Context, order *Order) error{
+func (g *GatewayServer) sendInPostgres(ctx context.Context, order *Order) (string, error) {
 	tx, err := g.poolDB.Begin(ctx)
-	if err != nil{
-		return err
+	if err != nil {
+		return "", err
 	}
 	defer tx.Rollback(ctx)
 
-	tx.Exec(ctx, `INSERT`)
+	var id string
 
-	// outbox
+	err = tx.QueryRow(ctx, `INSERT INTO orders(idemp_key, employee_id, department_id, status, confirmation_employee_id)
+						   VALUES($1, $2, $3, $4, $5)
+						   RETURNS id`,	
+						   order.IdempotencyKey, order.EmployeeID, order.DepartmentID, "PENDING", order.ConfirmationEmployeeID).Scan(&id)
+	if err != nil{
+		return "", err
+	}
+
+	log.Println("New in MAIN")
+
+	key := order.EmployeeID + order.DepartmentID
+
+	payload, err := json.Marshal(order)
+	if err != nil{
+		return "", err
+	}
+
+	_, err = tx.Exec(ctx, `INSERT INTO outbox(idemp_key, topic, key, payload)
+						   VALUES($1, $2, $3, $4)`,
+						   order.IdempotencyKey, "orders", key, payload)
+	if err != nil{
+		return "", err
+	}
+
+	log.Println("New in OUTBOX")
+	
+	return id, tx.Commit(ctx)
+
 }
 
-func (g *GatewayServer) checkInRedis(ctx context.Context, IdempotencyKey string) (bool, error){
+func (g *GatewayServer) checkInRedis(ctx context.Context, IdempotencyKey string) (bool, error) {
 	_, err := g.RedisDB.Get(ctx, IdempotencyKey).Result()
-	if err != nil{
-		if err == redis.Nil{
+	if err != nil {
+		if err == redis.Nil {
 			return false, nil
 		}
 

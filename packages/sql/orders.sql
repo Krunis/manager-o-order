@@ -1,5 +1,10 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS orders(
-    idemp_key PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    
+    idemp_key TEXT UNIQUE,
+
     employee_id TEXT,
     department_id TEXT,
     status TEXT NOT NULL DEFAULT 'PENDING',
@@ -22,5 +27,5 @@ CREATE TABLE IF NOT EXISTS outbox(
     payload JSONB NOT NULL,
     
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    sent_at TIMESTAMPTZ,
+    sent_at TIMESTAMPTZ
 )

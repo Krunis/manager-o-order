@@ -104,7 +104,7 @@ func (g *GatewayServer) Start() error {
 		return err
 	}
 
-	g.mux.HandleFunc("/new-order", g.NewOrderHandler)
+	g.mux.HandleFunc("/order/new", g.NewOrderHandler)
 
 	g.httpServer = &http.Server{}
 
@@ -154,24 +154,46 @@ func (g *GatewayServer) NewOrderHandler(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
+		ctxRedis, cancel := context.WithTimeout(r.Context(), time.Second * 1)
+		defer cancel()
+
+		exist, err := g.checkInRedis(ctxRedis, order.IdempotencyKey)
+		if err != nil{
+			http.Error(w, "failed to check order", http.StatusInternalServerError)
+			return
+		}
+		if exist{
+			http.Error(w, "order already exists", http.StatusConflict)
+			return
+		}
+
+		ctxPG, cancel := context.WithTimeout(r.Context(), time.Second * 1)
+		defer cancel()
+
+		id, err := g.sendInPostgres(ctxPG, order)
+		if err != nil{
+			http.Error(w, "failed to create order", http.StatusInternalServerError)
+			return
+		}
+
 		resp := struct{
 			OrderId string `json:"order_id"`
 			Status string `json:"status"`
 			EstimatedTime string `json:"estimated_time"`
 			StatusUrl string `json:"status_url"`
+		}{
+			OrderId: id,
+			Status: "PENDING",
+			EstimatedTime: "40m",
+			StatusUrl: fmt.Sprintf("order/status?order_id=%s", id),
 		}
 
-		
-
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode()
+		json.NewEncoder(w).Encode(resp)
 
 		w.WriteHeader(http.StatusCreated)
-
-
-	
 }
-
+}
 func (g *GatewayServer) Stop() error {
 	var result error
 

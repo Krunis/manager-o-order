@@ -32,20 +32,11 @@ func NewSaramaProducer(port string) (sarama.SyncProducer, error){
 	return sarama.NewSyncProducer([]string{port}, config)
 }
 
-func (g *GatewayServer) sendInKafka(order *Order) error{
-	key := sarama.ByteEncoder([]byte(order.IdempotencyKey))
-
-	valueBytes, err := json.Marshal(order)
-	if err != nil{
-		return err
-	}
-
-	value := sarama.ByteEncoder(valueBytes)	
-
+func (g *GatewayServer) sendInKafka(topic string, key, value []byte) error{
 	part, offset, err := g.saramaProducer.SendMessage(&sarama.ProducerMessage{
-		Topic: "orders-new",
-		Key: key,
-		Value: value,
+		Topic: topic,
+		Key: sarama.ByteEncoder(key),
+		Value: sarama.ByteEncoder(value),
 	})
 	if err != nil{
 		log.Printf("Failed to sent: %s", err)
