@@ -51,6 +51,8 @@ type GatewayServer struct {
 
 	stopOnce sync.Once
 
+	wg sync.WaitGroup
+
 	lifecycle common.Lifecycle
 }
 
@@ -84,10 +86,11 @@ func (g *GatewayServer) Start() error {
 		}
 		return nil
 	}()
-
 	if err != nil {
 		return err
 	}
+
+	g.wg.Go(g.startPolling)
 
 	err = func() error {
 		ctx, cancel := context.WithTimeout(g.lifecycle.Ctx, time.Second*5)
@@ -99,7 +102,6 @@ func (g *GatewayServer) Start() error {
 		}
 		return nil
 	}()
-
 	if err != nil {
 		return err
 	}

@@ -1,7 +1,6 @@
 package apigateway
 
 import (
-	"encoding/json"
 	"log"
 	"time"
 
