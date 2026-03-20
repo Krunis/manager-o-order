@@ -28,4 +28,19 @@ CREATE TABLE IF NOT EXISTS outbox(
     
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     sent_at TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS saga_states(
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+    order_id UUID REFERENCES orders(id),
+    status TEXT,
+    current_step INT,
+
+    payload JSONB,
+
+    error TEXT,
+    
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
 )

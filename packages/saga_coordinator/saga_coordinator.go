@@ -1,3 +1,6 @@
 package sagacoordinator
 
-func
+type SagaCoordinator struct{
+	dbRepo DBSagaRepository
+	delivery	
+}
