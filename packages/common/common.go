@@ -12,6 +12,27 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+type DeliveryInformation struct {
+	Table int16 `json:"table"`
+}
+
+type Item struct {
+	ID               string `json:"id"`
+	Name             string `json:"name"`
+	Count            uint8  `json:"count"`
+	ConfirmationType string `json:"confirmation_type"`
+}
+
+type Order struct {
+	ID                     string
+	EmployeeID             string               `json:"employee_id"`
+	DepartmentID           string               `json:"department_id"`
+	Items                  []*Item              `json:"items"`
+	Delivery               *DeliveryInformation `json:"delivery_information"`
+	ConfirmationEmployeeID string               `json:"confirmation_employee_id"`
+	IdempotencyKey         string               `json:"idempotency_key"`
+}
+
 type Lifecycle struct {
 	Ctx    context.Context
 	Cancel context.CancelFunc

@@ -3,9 +3,11 @@ package apigateway
 import (
 	"errors"
 	"strings"
+
+	"github.com/Krunis/manager-o-order/packages/common"
 )
 
-func ValidateOrder(order *Order) error {
+func ValidateOrder(order *common.Order) error {
 	var errorSlice []string
 
 	if strings.TrimSpace(order.EmployeeID) == ""{
@@ -37,7 +39,7 @@ func ValidateOrder(order *Order) error {
 	return nil
 }
 
-func ValidateItem(item *Item) string {
+func ValidateItem(item *common.Item) string {
 	var errorSlice []string
 
 	if strings.TrimSpace(item.ID) == ""{

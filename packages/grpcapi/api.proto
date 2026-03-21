@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package grpcapi;
+
+option go_package = "github.com/Krunis/manager-o-order/grpcapi";
+
+
+service Storage{
+  rpc GetItem(ItemRequest) returns (ItemResponse);
+}
+
+message ItemRequest {
+  //
+}
+
+message ItemResponse {
+    //
+}
+
+service Delivery {
+  rpc SendToQueue(AddressRequest) returns (AddressResponse);
+}
+
+message AddressRequest{
+    //
+}
+
+message AddressResponse{
+    //
+}
+
+service Confirmation{
+    rpc SendConfirmation(ConfirmatorInfoRequest) returns (ConfirmatorInfoResponse);
+}
+
+message ConfirmatorInfoRequest {
+  
+}
+
+message ConfirmatorInfoResponse {
+  
+}
+
+service Notification{
+
+}

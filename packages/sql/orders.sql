@@ -2,13 +2,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS orders(
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    
-    idemp_key TEXT UNIQUE,
 
     employee_id TEXT,
     department_id TEXT,
     status TEXT NOT NULL DEFAULT 'PENDING',
     confirmation_employee_id TEXT,
+
+    idemp_key TEXT UNIQUE,
 
     confirmation_status TEXT,
     delivert_status TEXT,

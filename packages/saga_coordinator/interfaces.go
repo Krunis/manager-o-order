@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/Krunis/manager-o-order/packages/common"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -12,7 +13,7 @@ type SagaState struct{
 	OrderID string
 	Status string
 	CurrentStep int
-	Payload []byte
+	Payload *common.Order
 	Error string
 	CreatedAt *time.Time
 	UpdatedAt *time.Time

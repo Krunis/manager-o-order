@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/Krunis/manager-o-order/packages/common"
 	"github.com/redis/go-redis/v9"
 )
 
-func (g *GatewayServer) sendInPostgres(ctx context.Context, order *Order) (string, error) {
+func (g *GatewayServer) sendInPostgres(ctx context.Context, order *common.Order) (string, error) {
 	tx, err := g.poolDB.Begin(ctx)
 	if err != nil {
 		return "", err
