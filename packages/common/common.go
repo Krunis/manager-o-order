@@ -13,13 +13,13 @@ import (
 )
 
 type DeliveryInformation struct {
-	Table int16 `json:"table"`
+	Table int32 `json:"table"`
 }
 
 type Item struct {
 	ID               string `json:"id"`
 	Name             string `json:"name"`
-	Count            uint8  `json:"count"`
+	Count            uint32  `json:"count"`
 	ConfirmationType string `json:"confirmation_type"`
 }
 

@@ -10,11 +10,14 @@ service Storage{
 }
 
 message ItemRequest {
-  //
+  string id = 1;
+  string name = 2;
+  uint32 count = 3;
 }
 
 message ItemResponse {
-    //
+    bool accepted = 1;
+    string more_info = 2;
 }
 
 service Delivery {
@@ -22,11 +25,12 @@ service Delivery {
 }
 
 message AddressRequest{
-    //
+  int32 table = 1;
 }
 
 message AddressResponse{
-    //
+    bool added = 1;
+    string more_info = 2;
 }
 
 service Confirmation{
@@ -34,10 +38,12 @@ service Confirmation{
 }
 
 message ConfirmatorInfoRequest {
-  
+  string confirmation_employee_id = 1;
+  repeated string confirmation_type = 2;
 }
 
 message ConfirmatorInfoResponse {
+  bool sent = 1;
   
 }
 

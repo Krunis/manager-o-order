@@ -20,7 +20,7 @@ type SagaState struct{
 }
 
 type DBSagaRepository interface {
-	Save(ctx context.Context, state *SagaState) error
+	Save(ctx context.Context, state *SagaState) (string, error)
 
 	Update(ctx context.Context, state *SagaState) error
 

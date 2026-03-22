@@ -1,6 +1,10 @@
 package sagacoordinator
 
-import "github.com/Krunis/manager-o-order/packages/common"
+import (
+	"context"
+
+	"github.com/Krunis/manager-o-order/packages/common"
+)
 
 
 type SagaCoordinator struct {
@@ -18,7 +22,15 @@ func (s *SagaCoordinator) StartSaga(order *common.Order) error{
 		Payload: order,
 	}
 
-	s.dbRepo.Save()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	id, err := s.dbRepo.Save(ctx, saga)
+	if err != nil{
+		return err
+	}
+
+	saga.ID = id
 
 	return s.processSaga(saga)
 }

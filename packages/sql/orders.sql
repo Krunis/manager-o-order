@@ -41,6 +41,6 @@ CREATE TABLE IF NOT EXISTS saga_states(
 
     error TEXT,
     
-    created_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ
-)
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
