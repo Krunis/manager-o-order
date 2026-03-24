@@ -84,7 +84,7 @@ func (x *ItemRequest) GetCount() uint32 {
 type ItemResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Accepted      bool                   `protobuf:"varint,1,opt,name=accepted,proto3" json:"accepted,omitempty"`
-	MoreInfo      string                 `protobuf:"bytes,2,opt,name=more_info,json=moreInfo,proto3" json:"more_info,omitempty"`
+	ReserveId     string                 `protobuf:"bytes,2,opt,name=reserve_id,json=reserveId,proto3" json:"reserve_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -126,11 +126,99 @@ func (x *ItemResponse) GetAccepted() bool {
 	return false
 }
 
-func (x *ItemResponse) GetMoreInfo() string {
+func (x *ItemResponse) GetReserveId() string {
 	if x != nil {
-		return x.MoreInfo
+		return x.ReserveId
 	}
 	return ""
+}
+
+type CancelReserveRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ReserveId     string                 `protobuf:"bytes,1,opt,name=reserve_id,json=reserveId,proto3" json:"reserve_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelReserveRequest) Reset() {
+	*x = CancelReserveRequest{}
+	mi := &file_api_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelReserveRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelReserveRequest) ProtoMessage() {}
+
+func (x *CancelReserveRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelReserveRequest.ProtoReflect.Descriptor instead.
+func (*CancelReserveRequest) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *CancelReserveRequest) GetReserveId() string {
+	if x != nil {
+		return x.ReserveId
+	}
+	return ""
+}
+
+type CancelReserveResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelReserveResponse) Reset() {
+	*x = CancelReserveResponse{}
+	mi := &file_api_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelReserveResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelReserveResponse) ProtoMessage() {}
+
+func (x *CancelReserveResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelReserveResponse.ProtoReflect.Descriptor instead.
+func (*CancelReserveResponse) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *CancelReserveResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
 }
 
 type AddressRequest struct {
@@ -142,7 +230,7 @@ type AddressRequest struct {
 
 func (x *AddressRequest) Reset() {
 	*x = AddressRequest{}
-	mi := &file_api_proto_msgTypes[2]
+	mi := &file_api_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -154,7 +242,7 @@ func (x *AddressRequest) String() string {
 func (*AddressRequest) ProtoMessage() {}
 
 func (x *AddressRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[2]
+	mi := &file_api_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -167,7 +255,7 @@ func (x *AddressRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddressRequest.ProtoReflect.Descriptor instead.
 func (*AddressRequest) Descriptor() ([]byte, []int) {
-	return file_api_proto_rawDescGZIP(), []int{2}
+	return file_api_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AddressRequest) GetTable() int32 {
@@ -187,7 +275,7 @@ type AddressResponse struct {
 
 func (x *AddressResponse) Reset() {
 	*x = AddressResponse{}
-	mi := &file_api_proto_msgTypes[3]
+	mi := &file_api_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -199,7 +287,7 @@ func (x *AddressResponse) String() string {
 func (*AddressResponse) ProtoMessage() {}
 
 func (x *AddressResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[3]
+	mi := &file_api_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -212,7 +300,7 @@ func (x *AddressResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddressResponse.ProtoReflect.Descriptor instead.
 func (*AddressResponse) Descriptor() ([]byte, []int) {
-	return file_api_proto_rawDescGZIP(), []int{3}
+	return file_api_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *AddressResponse) GetAdded() bool {
@@ -229,6 +317,94 @@ func (x *AddressResponse) GetMoreInfo() string {
 	return ""
 }
 
+type CancelDeliveryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelDeliveryRequest) Reset() {
+	*x = CancelDeliveryRequest{}
+	mi := &file_api_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelDeliveryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelDeliveryRequest) ProtoMessage() {}
+
+func (x *CancelDeliveryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelDeliveryRequest.ProtoReflect.Descriptor instead.
+func (*CancelDeliveryRequest) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *CancelDeliveryRequest) GetOrderId() string {
+	if x != nil {
+		return x.OrderId
+	}
+	return ""
+}
+
+type CancelDeliveryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelDeliveryResponse) Reset() {
+	*x = CancelDeliveryResponse{}
+	mi := &file_api_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelDeliveryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelDeliveryResponse) ProtoMessage() {}
+
+func (x *CancelDeliveryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelDeliveryResponse.ProtoReflect.Descriptor instead.
+func (*CancelDeliveryResponse) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CancelDeliveryResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 type ConfirmatorInfoRequest struct {
 	state                  protoimpl.MessageState `protogen:"open.v1"`
 	ConfirmationEmployeeId string                 `protobuf:"bytes,1,opt,name=confirmation_employee_id,json=confirmationEmployeeId,proto3" json:"confirmation_employee_id,omitempty"`
@@ -239,7 +415,7 @@ type ConfirmatorInfoRequest struct {
 
 func (x *ConfirmatorInfoRequest) Reset() {
 	*x = ConfirmatorInfoRequest{}
-	mi := &file_api_proto_msgTypes[4]
+	mi := &file_api_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -251,7 +427,7 @@ func (x *ConfirmatorInfoRequest) String() string {
 func (*ConfirmatorInfoRequest) ProtoMessage() {}
 
 func (x *ConfirmatorInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[4]
+	mi := &file_api_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -264,7 +440,7 @@ func (x *ConfirmatorInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfirmatorInfoRequest.ProtoReflect.Descriptor instead.
 func (*ConfirmatorInfoRequest) Descriptor() ([]byte, []int) {
-	return file_api_proto_rawDescGZIP(), []int{4}
+	return file_api_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ConfirmatorInfoRequest) GetConfirmationEmployeeId() string {
@@ -282,15 +458,16 @@ func (x *ConfirmatorInfoRequest) GetConfirmationType() []string {
 }
 
 type ConfirmatorInfoResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Sent          bool                   `protobuf:"varint,1,opt,name=sent,proto3" json:"sent,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Sent           bool                   `protobuf:"varint,1,opt,name=sent,proto3" json:"sent,omitempty"`
+	ConfirmationId string                 `protobuf:"bytes,2,opt,name=confirmation_id,json=confirmationId,proto3" json:"confirmation_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ConfirmatorInfoResponse) Reset() {
 	*x = ConfirmatorInfoResponse{}
-	mi := &file_api_proto_msgTypes[5]
+	mi := &file_api_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -302,7 +479,7 @@ func (x *ConfirmatorInfoResponse) String() string {
 func (*ConfirmatorInfoResponse) ProtoMessage() {}
 
 func (x *ConfirmatorInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[5]
+	mi := &file_api_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -315,12 +492,107 @@ func (x *ConfirmatorInfoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfirmatorInfoResponse.ProtoReflect.Descriptor instead.
 func (*ConfirmatorInfoResponse) Descriptor() ([]byte, []int) {
-	return file_api_proto_rawDescGZIP(), []int{5}
+	return file_api_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ConfirmatorInfoResponse) GetSent() bool {
 	if x != nil {
 		return x.Sent
+	}
+	return false
+}
+
+func (x *ConfirmatorInfoResponse) GetConfirmationId() string {
+	if x != nil {
+		return x.ConfirmationId
+	}
+	return ""
+}
+
+type CancelConfirmationRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ConfirmationId string                 `protobuf:"bytes,1,opt,name=confirmation_id,json=confirmationId,proto3" json:"confirmation_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CancelConfirmationRequest) Reset() {
+	*x = CancelConfirmationRequest{}
+	mi := &file_api_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelConfirmationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelConfirmationRequest) ProtoMessage() {}
+
+func (x *CancelConfirmationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelConfirmationRequest.ProtoReflect.Descriptor instead.
+func (*CancelConfirmationRequest) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CancelConfirmationRequest) GetConfirmationId() string {
+	if x != nil {
+		return x.ConfirmationId
+	}
+	return ""
+}
+
+type CancelConfirmationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelConfirmationResponse) Reset() {
+	*x = CancelConfirmationResponse{}
+	mi := &file_api_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelConfirmationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelConfirmationResponse) ProtoMessage() {}
+
+func (x *CancelConfirmationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelConfirmationResponse.ProtoReflect.Descriptor instead.
+func (*CancelConfirmationResponse) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *CancelConfirmationResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
 	}
 	return false
 }
@@ -333,26 +605,44 @@ const file_api_proto_rawDesc = "" +
 	"\vItemRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
-	"\x05count\x18\x03 \x01(\rR\x05count\"G\n" +
+	"\x05count\x18\x03 \x01(\rR\x05count\"I\n" +
 	"\fItemResponse\x12\x1a\n" +
-	"\baccepted\x18\x01 \x01(\bR\baccepted\x12\x1b\n" +
-	"\tmore_info\x18\x02 \x01(\tR\bmoreInfo\"&\n" +
+	"\baccepted\x18\x01 \x01(\bR\baccepted\x12\x1d\n" +
+	"\n" +
+	"reserve_id\x18\x02 \x01(\tR\treserveId\"5\n" +
+	"\x14CancelReserveRequest\x12\x1d\n" +
+	"\n" +
+	"reserve_id\x18\x01 \x01(\tR\treserveId\"1\n" +
+	"\x15CancelReserveResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"&\n" +
 	"\x0eAddressRequest\x12\x14\n" +
 	"\x05table\x18\x01 \x01(\x05R\x05table\"D\n" +
 	"\x0fAddressResponse\x12\x14\n" +
 	"\x05added\x18\x01 \x01(\bR\x05added\x12\x1b\n" +
-	"\tmore_info\x18\x02 \x01(\tR\bmoreInfo\"\x7f\n" +
+	"\tmore_info\x18\x02 \x01(\tR\bmoreInfo\"2\n" +
+	"\x15CancelDeliveryRequest\x12\x19\n" +
+	"\border_id\x18\x01 \x01(\tR\aorderId\"2\n" +
+	"\x16CancelDeliveryResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x7f\n" +
 	"\x16ConfirmatorInfoRequest\x128\n" +
 	"\x18confirmation_employee_id\x18\x01 \x01(\tR\x16confirmationEmployeeId\x12+\n" +
-	"\x11confirmation_type\x18\x02 \x03(\tR\x10confirmationType\"-\n" +
+	"\x11confirmation_type\x18\x02 \x03(\tR\x10confirmationType\"V\n" +
 	"\x17ConfirmatorInfoResponse\x12\x12\n" +
-	"\x04sent\x18\x01 \x01(\bR\x04sent2A\n" +
-	"\aStorage\x126\n" +
-	"\aGetItem\x12\x14.grpcapi.ItemRequest\x1a\x15.grpcapi.ItemResponse2L\n" +
+	"\x04sent\x18\x01 \x01(\bR\x04sent\x12'\n" +
+	"\x0fconfirmation_id\x18\x02 \x01(\tR\x0econfirmationId\"D\n" +
+	"\x19CancelConfirmationRequest\x12'\n" +
+	"\x0fconfirmation_id\x18\x01 \x01(\tR\x0econfirmationId\"6\n" +
+	"\x1aCancelConfirmationResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x95\x01\n" +
+	"\aStorage\x12:\n" +
+	"\vReserveItem\x12\x14.grpcapi.ItemRequest\x1a\x15.grpcapi.ItemResponse\x12N\n" +
+	"\rCancelReserve\x12\x1d.grpcapi.CancelReserveRequest\x1a\x1e.grpcapi.CancelReserveResponse2\x9f\x01\n" +
 	"\bDelivery\x12@\n" +
-	"\vSendToQueue\x12\x17.grpcapi.AddressRequest\x1a\x18.grpcapi.AddressResponse2e\n" +
+	"\vSendToQueue\x12\x17.grpcapi.AddressRequest\x1a\x18.grpcapi.AddressResponse\x12Q\n" +
+	"\x0eCancelDelivery\x12\x1e.grpcapi.CancelDeliveryRequest\x1a\x1f.grpcapi.CancelDeliveryResponse2\xc4\x01\n" +
 	"\fConfirmation\x12U\n" +
-	"\x10SendConfirmation\x12\x1f.grpcapi.ConfirmatorInfoRequest\x1a .grpcapi.ConfirmatorInfoResponse2\x0e\n" +
+	"\x10SendConfirmation\x12\x1f.grpcapi.ConfirmatorInfoRequest\x1a .grpcapi.ConfirmatorInfoResponse\x12]\n" +
+	"\x12CancelConfirmation\x12\".grpcapi.CancelConfirmationRequest\x1a#.grpcapi.CancelConfirmationResponse2\x0e\n" +
 	"\fNotificationB+Z)github.com/Krunis/manager-o-order/grpcapib\x06proto3"
 
 var (
@@ -367,27 +657,39 @@ func file_api_proto_rawDescGZIP() []byte {
 	return file_api_proto_rawDescData
 }
 
-var file_api_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_api_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_api_proto_goTypes = []any{
-	(*ItemRequest)(nil),             // 0: grpcapi.ItemRequest
-	(*ItemResponse)(nil),            // 1: grpcapi.ItemResponse
-	(*AddressRequest)(nil),          // 2: grpcapi.AddressRequest
-	(*AddressResponse)(nil),         // 3: grpcapi.AddressResponse
-	(*ConfirmatorInfoRequest)(nil),  // 4: grpcapi.ConfirmatorInfoRequest
-	(*ConfirmatorInfoResponse)(nil), // 5: grpcapi.ConfirmatorInfoResponse
+	(*ItemRequest)(nil),                // 0: grpcapi.ItemRequest
+	(*ItemResponse)(nil),               // 1: grpcapi.ItemResponse
+	(*CancelReserveRequest)(nil),       // 2: grpcapi.CancelReserveRequest
+	(*CancelReserveResponse)(nil),      // 3: grpcapi.CancelReserveResponse
+	(*AddressRequest)(nil),             // 4: grpcapi.AddressRequest
+	(*AddressResponse)(nil),            // 5: grpcapi.AddressResponse
+	(*CancelDeliveryRequest)(nil),      // 6: grpcapi.CancelDeliveryRequest
+	(*CancelDeliveryResponse)(nil),     // 7: grpcapi.CancelDeliveryResponse
+	(*ConfirmatorInfoRequest)(nil),     // 8: grpcapi.ConfirmatorInfoRequest
+	(*ConfirmatorInfoResponse)(nil),    // 9: grpcapi.ConfirmatorInfoResponse
+	(*CancelConfirmationRequest)(nil),  // 10: grpcapi.CancelConfirmationRequest
+	(*CancelConfirmationResponse)(nil), // 11: grpcapi.CancelConfirmationResponse
 }
 var file_api_proto_depIdxs = []int32{
-	0, // 0: grpcapi.Storage.GetItem:input_type -> grpcapi.ItemRequest
-	2, // 1: grpcapi.Delivery.SendToQueue:input_type -> grpcapi.AddressRequest
-	4, // 2: grpcapi.Confirmation.SendConfirmation:input_type -> grpcapi.ConfirmatorInfoRequest
-	1, // 3: grpcapi.Storage.GetItem:output_type -> grpcapi.ItemResponse
-	3, // 4: grpcapi.Delivery.SendToQueue:output_type -> grpcapi.AddressResponse
-	5, // 5: grpcapi.Confirmation.SendConfirmation:output_type -> grpcapi.ConfirmatorInfoResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: grpcapi.Storage.ReserveItem:input_type -> grpcapi.ItemRequest
+	2,  // 1: grpcapi.Storage.CancelReserve:input_type -> grpcapi.CancelReserveRequest
+	4,  // 2: grpcapi.Delivery.SendToQueue:input_type -> grpcapi.AddressRequest
+	6,  // 3: grpcapi.Delivery.CancelDelivery:input_type -> grpcapi.CancelDeliveryRequest
+	8,  // 4: grpcapi.Confirmation.SendConfirmation:input_type -> grpcapi.ConfirmatorInfoRequest
+	10, // 5: grpcapi.Confirmation.CancelConfirmation:input_type -> grpcapi.CancelConfirmationRequest
+	1,  // 6: grpcapi.Storage.ReserveItem:output_type -> grpcapi.ItemResponse
+	3,  // 7: grpcapi.Storage.CancelReserve:output_type -> grpcapi.CancelReserveResponse
+	5,  // 8: grpcapi.Delivery.SendToQueue:output_type -> grpcapi.AddressResponse
+	7,  // 9: grpcapi.Delivery.CancelDelivery:output_type -> grpcapi.CancelDeliveryResponse
+	9,  // 10: grpcapi.Confirmation.SendConfirmation:output_type -> grpcapi.ConfirmatorInfoResponse
+	11, // 11: grpcapi.Confirmation.CancelConfirmation:output_type -> grpcapi.CancelConfirmationResponse
+	6,  // [6:12] is the sub-list for method output_type
+	0,  // [0:6] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_api_proto_init() }
@@ -401,7 +703,7 @@ func file_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_proto_rawDesc), len(file_api_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   4,
 		},

@@ -4,24 +4,37 @@ package grpcapi;
 
 option go_package = "github.com/Krunis/manager-o-order/grpcapi";
 
-
 service Storage{
-  rpc GetItem(ItemRequest) returns (ItemResponse);
+  rpc ReserveItem(ItemRequest) returns (ItemResponse);
+
+  rpc CancelReserve(CancelReserveRequest) returns (CancelReserveResponse);
+
 }
 
 message ItemRequest {
-  string id = 1;
-  string name = 2;
+  string id    = 1;
+  string name  = 2;
   uint32 count = 3;
 }
 
 message ItemResponse {
-    bool accepted = 1;
-    string more_info = 2;
+  bool   accepted  = 1;
+  string reserve_id = 2;
+}
+
+message CancelReserveRequest {
+  string reserve_id = 1;
+}
+
+message CancelReserveResponse{
+  bool success = 1;
 }
 
 service Delivery {
   rpc SendToQueue(AddressRequest) returns (AddressResponse);
+
+  rpc CancelDelivery(CancelDeliveryRequest) returns (CancelDeliveryResponse);
+
 }
 
 message AddressRequest{
@@ -29,22 +42,41 @@ message AddressRequest{
 }
 
 message AddressResponse{
-    bool added = 1;
-    string more_info = 2;
+  bool   added     = 1;
+  string more_info = 2;
+}
+
+message CancelDeliveryRequest{
+  string order_id = 1;
+}
+
+message CancelDeliveryResponse{
+  bool success = 1;
 }
 
 service Confirmation{
-    rpc SendConfirmation(ConfirmatorInfoRequest) returns (ConfirmatorInfoResponse);
+  rpc SendConfirmation(ConfirmatorInfoRequest) returns (ConfirmatorInfoResponse);
+
+  rpc CancelConfirmation(CancelConfirmationRequest) returns (CancelConfirmationResponse);
+
 }
 
 message ConfirmatorInfoRequest {
-  string confirmation_employee_id = 1;
-  repeated string confirmation_type = 2;
+  string          confirmation_employee_id = 1;
+  repeated string confirmation_type        = 2;
 }
 
 message ConfirmatorInfoResponse {
   bool sent = 1;
-  
+  string confirmation_id = 2;
+}
+
+message CancelConfirmationRequest {
+  string confirmation_id = 1;
+}
+
+message CancelConfirmationResponse {
+  bool success = 1;
 }
 
 service Notification{

@@ -19,14 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Storage_GetItem_FullMethodName = "/grpcapi.Storage/GetItem"
+	Storage_ReserveItem_FullMethodName   = "/grpcapi.Storage/ReserveItem"
+	Storage_CancelReserve_FullMethodName = "/grpcapi.Storage/CancelReserve"
 )
 
 // StorageClient is the client API for Storage service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StorageClient interface {
-	GetItem(ctx context.Context, in *ItemRequest, opts ...grpc.CallOption) (*ItemResponse, error)
+	ReserveItem(ctx context.Context, in *ItemRequest, opts ...grpc.CallOption) (*ItemResponse, error)
+	CancelReserve(ctx context.Context, in *CancelReserveRequest, opts ...grpc.CallOption) (*CancelReserveResponse, error)
 }
 
 type storageClient struct {
@@ -37,10 +39,20 @@ func NewStorageClient(cc grpc.ClientConnInterface) StorageClient {
 	return &storageClient{cc}
 }
 
-func (c *storageClient) GetItem(ctx context.Context, in *ItemRequest, opts ...grpc.CallOption) (*ItemResponse, error) {
+func (c *storageClient) ReserveItem(ctx context.Context, in *ItemRequest, opts ...grpc.CallOption) (*ItemResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ItemResponse)
-	err := c.cc.Invoke(ctx, Storage_GetItem_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Storage_ReserveItem_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storageClient) CancelReserve(ctx context.Context, in *CancelReserveRequest, opts ...grpc.CallOption) (*CancelReserveResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelReserveResponse)
+	err := c.cc.Invoke(ctx, Storage_CancelReserve_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +63,8 @@ func (c *storageClient) GetItem(ctx context.Context, in *ItemRequest, opts ...gr
 // All implementations must embed UnimplementedStorageServer
 // for forward compatibility.
 type StorageServer interface {
-	GetItem(context.Context, *ItemRequest) (*ItemResponse, error)
+	ReserveItem(context.Context, *ItemRequest) (*ItemResponse, error)
+	CancelReserve(context.Context, *CancelReserveRequest) (*CancelReserveResponse, error)
 	mustEmbedUnimplementedStorageServer()
 }
 
@@ -62,8 +75,11 @@ type StorageServer interface {
 // pointer dereference when methods are called.
 type UnimplementedStorageServer struct{}
 
-func (UnimplementedStorageServer) GetItem(context.Context, *ItemRequest) (*ItemResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetItem not implemented")
+func (UnimplementedStorageServer) ReserveItem(context.Context, *ItemRequest) (*ItemResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReserveItem not implemented")
+}
+func (UnimplementedStorageServer) CancelReserve(context.Context, *CancelReserveRequest) (*CancelReserveResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelReserve not implemented")
 }
 func (UnimplementedStorageServer) mustEmbedUnimplementedStorageServer() {}
 func (UnimplementedStorageServer) testEmbeddedByValue()                 {}
@@ -86,20 +102,38 @@ func RegisterStorageServer(s grpc.ServiceRegistrar, srv StorageServer) {
 	s.RegisterService(&Storage_ServiceDesc, srv)
 }
 
-func _Storage_GetItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Storage_ReserveItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ItemRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StorageServer).GetItem(ctx, in)
+		return srv.(StorageServer).ReserveItem(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Storage_GetItem_FullMethodName,
+		FullMethod: Storage_ReserveItem_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StorageServer).GetItem(ctx, req.(*ItemRequest))
+		return srv.(StorageServer).ReserveItem(ctx, req.(*ItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Storage_CancelReserve_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelReserveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageServer).CancelReserve(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Storage_CancelReserve_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageServer).CancelReserve(ctx, req.(*CancelReserveRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -112,8 +146,12 @@ var Storage_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*StorageServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetItem",
-			Handler:    _Storage_GetItem_Handler,
+			MethodName: "ReserveItem",
+			Handler:    _Storage_ReserveItem_Handler,
+		},
+		{
+			MethodName: "CancelReserve",
+			Handler:    _Storage_CancelReserve_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -121,7 +159,8 @@ var Storage_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	Delivery_SendToQueue_FullMethodName = "/grpcapi.Delivery/SendToQueue"
+	Delivery_SendToQueue_FullMethodName    = "/grpcapi.Delivery/SendToQueue"
+	Delivery_CancelDelivery_FullMethodName = "/grpcapi.Delivery/CancelDelivery"
 )
 
 // DeliveryClient is the client API for Delivery service.
@@ -129,6 +168,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DeliveryClient interface {
 	SendToQueue(ctx context.Context, in *AddressRequest, opts ...grpc.CallOption) (*AddressResponse, error)
+	CancelDelivery(ctx context.Context, in *CancelDeliveryRequest, opts ...grpc.CallOption) (*CancelDeliveryResponse, error)
 }
 
 type deliveryClient struct {
@@ -149,11 +189,22 @@ func (c *deliveryClient) SendToQueue(ctx context.Context, in *AddressRequest, op
 	return out, nil
 }
 
+func (c *deliveryClient) CancelDelivery(ctx context.Context, in *CancelDeliveryRequest, opts ...grpc.CallOption) (*CancelDeliveryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelDeliveryResponse)
+	err := c.cc.Invoke(ctx, Delivery_CancelDelivery_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DeliveryServer is the server API for Delivery service.
 // All implementations must embed UnimplementedDeliveryServer
 // for forward compatibility.
 type DeliveryServer interface {
 	SendToQueue(context.Context, *AddressRequest) (*AddressResponse, error)
+	CancelDelivery(context.Context, *CancelDeliveryRequest) (*CancelDeliveryResponse, error)
 	mustEmbedUnimplementedDeliveryServer()
 }
 
@@ -166,6 +217,9 @@ type UnimplementedDeliveryServer struct{}
 
 func (UnimplementedDeliveryServer) SendToQueue(context.Context, *AddressRequest) (*AddressResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SendToQueue not implemented")
+}
+func (UnimplementedDeliveryServer) CancelDelivery(context.Context, *CancelDeliveryRequest) (*CancelDeliveryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelDelivery not implemented")
 }
 func (UnimplementedDeliveryServer) mustEmbedUnimplementedDeliveryServer() {}
 func (UnimplementedDeliveryServer) testEmbeddedByValue()                  {}
@@ -206,6 +260,24 @@ func _Delivery_SendToQueue_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Delivery_CancelDelivery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelDeliveryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeliveryServer).CancelDelivery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Delivery_CancelDelivery_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeliveryServer).CancelDelivery(ctx, req.(*CancelDeliveryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Delivery_ServiceDesc is the grpc.ServiceDesc for Delivery service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -217,13 +289,18 @@ var Delivery_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "SendToQueue",
 			Handler:    _Delivery_SendToQueue_Handler,
 		},
+		{
+			MethodName: "CancelDelivery",
+			Handler:    _Delivery_CancelDelivery_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "api.proto",
 }
 
 const (
-	Confirmation_SendConfirmation_FullMethodName = "/grpcapi.Confirmation/SendConfirmation"
+	Confirmation_SendConfirmation_FullMethodName   = "/grpcapi.Confirmation/SendConfirmation"
+	Confirmation_CancelConfirmation_FullMethodName = "/grpcapi.Confirmation/CancelConfirmation"
 )
 
 // ConfirmationClient is the client API for Confirmation service.
@@ -231,6 +308,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ConfirmationClient interface {
 	SendConfirmation(ctx context.Context, in *ConfirmatorInfoRequest, opts ...grpc.CallOption) (*ConfirmatorInfoResponse, error)
+	CancelConfirmation(ctx context.Context, in *CancelConfirmationRequest, opts ...grpc.CallOption) (*CancelConfirmationResponse, error)
 }
 
 type confirmationClient struct {
@@ -251,11 +329,22 @@ func (c *confirmationClient) SendConfirmation(ctx context.Context, in *Confirmat
 	return out, nil
 }
 
+func (c *confirmationClient) CancelConfirmation(ctx context.Context, in *CancelConfirmationRequest, opts ...grpc.CallOption) (*CancelConfirmationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelConfirmationResponse)
+	err := c.cc.Invoke(ctx, Confirmation_CancelConfirmation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ConfirmationServer is the server API for Confirmation service.
 // All implementations must embed UnimplementedConfirmationServer
 // for forward compatibility.
 type ConfirmationServer interface {
 	SendConfirmation(context.Context, *ConfirmatorInfoRequest) (*ConfirmatorInfoResponse, error)
+	CancelConfirmation(context.Context, *CancelConfirmationRequest) (*CancelConfirmationResponse, error)
 	mustEmbedUnimplementedConfirmationServer()
 }
 
@@ -268,6 +357,9 @@ type UnimplementedConfirmationServer struct{}
 
 func (UnimplementedConfirmationServer) SendConfirmation(context.Context, *ConfirmatorInfoRequest) (*ConfirmatorInfoResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SendConfirmation not implemented")
+}
+func (UnimplementedConfirmationServer) CancelConfirmation(context.Context, *CancelConfirmationRequest) (*CancelConfirmationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelConfirmation not implemented")
 }
 func (UnimplementedConfirmationServer) mustEmbedUnimplementedConfirmationServer() {}
 func (UnimplementedConfirmationServer) testEmbeddedByValue()                      {}
@@ -308,6 +400,24 @@ func _Confirmation_SendConfirmation_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Confirmation_CancelConfirmation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelConfirmationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConfirmationServer).CancelConfirmation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Confirmation_CancelConfirmation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConfirmationServer).CancelConfirmation(ctx, req.(*CancelConfirmationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Confirmation_ServiceDesc is the grpc.ServiceDesc for Confirmation service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -318,6 +428,10 @@ var Confirmation_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendConfirmation",
 			Handler:    _Confirmation_SendConfirmation_Handler,
+		},
+		{
+			MethodName: "CancelConfirmation",
+			Handler:    _Confirmation_CancelConfirmation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

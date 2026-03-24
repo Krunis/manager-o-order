@@ -38,8 +38,9 @@ func (s *SagaCoordinator) StartSaga(order *common.Order) error{
 }
 
 func (s *SagaCoordinator) processSaga(saga *SagaState) error{
+
 	if saga.CurrentStep == 0{
-		s.confirmation.SendConfirmation()
+		err := s.confirmation.SendConfirmation()
 	}
 
 	if saga.CurrentStep == 1{
