@@ -86,7 +86,5 @@ services:
     working_dir: /app/packages/grpcapi
     volumes:
       - ./packages/grpcapi:/app/packages/grpcapi
-      - ./packages/grpcapi/buf.yaml:/app/buf.yaml
-      - ./packages/grpcapi/buf.gen.yaml:/app/packages/grpcapi/buf.gen.yaml
     command: [ "generate" ]
     profiles: [ "tools" ]

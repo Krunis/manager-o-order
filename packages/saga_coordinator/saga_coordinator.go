@@ -4,14 +4,16 @@ import (
 	"context"
 
 	"github.com/Krunis/manager-o-order/packages/common"
+
+	pb "github.com/Krunis/manager-o-order/packages/grpcapi"
 )
 
 
 type SagaCoordinator struct {
 	dbRepo       DBSagaRepository
-	delivery     int
-	confirmation int
-	storage      int
+	delivery     pb.DeliveryClient
+	confirmation pb.ConfirmationClient
+	storage      pb.StorageClient
 }
 
 func (s *SagaCoordinator) StartSaga(order *common.Order) error{
@@ -37,14 +39,14 @@ func (s *SagaCoordinator) StartSaga(order *common.Order) error{
 
 func (s *SagaCoordinator) processSaga(saga *SagaState) error{
 	if saga.CurrentStep == 0{
-
+		s.confirmation.SendConfirmation()
 	}
 
 	if saga.CurrentStep == 1{
-		
+		s.storage.GetItem()
 	}
 
 	if saga.CurrentStep == 2{
-		
+		s.delivery.SendToQueue()
 	}
 }
