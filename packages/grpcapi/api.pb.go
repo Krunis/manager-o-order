@@ -633,14 +633,14 @@ const file_api_proto_rawDesc = "" +
 	"\x19CancelConfirmationRequest\x12'\n" +
 	"\x0fconfirmation_id\x18\x01 \x01(\tR\x0econfirmationId\"6\n" +
 	"\x1aCancelConfirmationResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\x95\x01\n" +
-	"\aStorage\x12:\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x9c\x01\n" +
+	"\x0eStorageService\x12:\n" +
 	"\vReserveItem\x12\x14.grpcapi.ItemRequest\x1a\x15.grpcapi.ItemResponse\x12N\n" +
-	"\rCancelReserve\x12\x1d.grpcapi.CancelReserveRequest\x1a\x1e.grpcapi.CancelReserveResponse2\x9f\x01\n" +
-	"\bDelivery\x12@\n" +
+	"\rCancelReserve\x12\x1d.grpcapi.CancelReserveRequest\x1a\x1e.grpcapi.CancelReserveResponse2\xa6\x01\n" +
+	"\x0fDeliveryService\x12@\n" +
 	"\vSendToQueue\x12\x17.grpcapi.AddressRequest\x1a\x18.grpcapi.AddressResponse\x12Q\n" +
-	"\x0eCancelDelivery\x12\x1e.grpcapi.CancelDeliveryRequest\x1a\x1f.grpcapi.CancelDeliveryResponse2\xc4\x01\n" +
-	"\fConfirmation\x12U\n" +
+	"\x0eCancelDelivery\x12\x1e.grpcapi.CancelDeliveryRequest\x1a\x1f.grpcapi.CancelDeliveryResponse2\xcb\x01\n" +
+	"\x13ConfirmationService\x12U\n" +
 	"\x10SendConfirmation\x12\x1f.grpcapi.ConfirmatorInfoRequest\x1a .grpcapi.ConfirmatorInfoResponse\x12]\n" +
 	"\x12CancelConfirmation\x12\".grpcapi.CancelConfirmationRequest\x1a#.grpcapi.CancelConfirmationResponse2\x0e\n" +
 	"\fNotificationB+Z)github.com/Krunis/manager-o-order/grpcapib\x06proto3"
@@ -673,18 +673,18 @@ var file_api_proto_goTypes = []any{
 	(*CancelConfirmationResponse)(nil), // 11: grpcapi.CancelConfirmationResponse
 }
 var file_api_proto_depIdxs = []int32{
-	0,  // 0: grpcapi.Storage.ReserveItem:input_type -> grpcapi.ItemRequest
-	2,  // 1: grpcapi.Storage.CancelReserve:input_type -> grpcapi.CancelReserveRequest
-	4,  // 2: grpcapi.Delivery.SendToQueue:input_type -> grpcapi.AddressRequest
-	6,  // 3: grpcapi.Delivery.CancelDelivery:input_type -> grpcapi.CancelDeliveryRequest
-	8,  // 4: grpcapi.Confirmation.SendConfirmation:input_type -> grpcapi.ConfirmatorInfoRequest
-	10, // 5: grpcapi.Confirmation.CancelConfirmation:input_type -> grpcapi.CancelConfirmationRequest
-	1,  // 6: grpcapi.Storage.ReserveItem:output_type -> grpcapi.ItemResponse
-	3,  // 7: grpcapi.Storage.CancelReserve:output_type -> grpcapi.CancelReserveResponse
-	5,  // 8: grpcapi.Delivery.SendToQueue:output_type -> grpcapi.AddressResponse
-	7,  // 9: grpcapi.Delivery.CancelDelivery:output_type -> grpcapi.CancelDeliveryResponse
-	9,  // 10: grpcapi.Confirmation.SendConfirmation:output_type -> grpcapi.ConfirmatorInfoResponse
-	11, // 11: grpcapi.Confirmation.CancelConfirmation:output_type -> grpcapi.CancelConfirmationResponse
+	0,  // 0: grpcapi.StorageService.ReserveItem:input_type -> grpcapi.ItemRequest
+	2,  // 1: grpcapi.StorageService.CancelReserve:input_type -> grpcapi.CancelReserveRequest
+	4,  // 2: grpcapi.DeliveryService.SendToQueue:input_type -> grpcapi.AddressRequest
+	6,  // 3: grpcapi.DeliveryService.CancelDelivery:input_type -> grpcapi.CancelDeliveryRequest
+	8,  // 4: grpcapi.ConfirmationService.SendConfirmation:input_type -> grpcapi.ConfirmatorInfoRequest
+	10, // 5: grpcapi.ConfirmationService.CancelConfirmation:input_type -> grpcapi.CancelConfirmationRequest
+	1,  // 6: grpcapi.StorageService.ReserveItem:output_type -> grpcapi.ItemResponse
+	3,  // 7: grpcapi.StorageService.CancelReserve:output_type -> grpcapi.CancelReserveResponse
+	5,  // 8: grpcapi.DeliveryService.SendToQueue:output_type -> grpcapi.AddressResponse
+	7,  // 9: grpcapi.DeliveryService.CancelDelivery:output_type -> grpcapi.CancelDeliveryResponse
+	9,  // 10: grpcapi.ConfirmationService.SendConfirmation:output_type -> grpcapi.ConfirmatorInfoResponse
+	11, // 11: grpcapi.ConfirmationService.CancelConfirmation:output_type -> grpcapi.CancelConfirmationResponse
 	6,  // [6:12] is the sub-list for method output_type
 	0,  // [0:6] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name

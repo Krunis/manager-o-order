@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Krunis/manager-o-order/packages/common"
+	"google.golang.org/grpc"
 
 	pb "github.com/Krunis/manager-o-order/packages/grpcapi"
 )
@@ -11,9 +12,10 @@ import (
 
 type SagaCoordinator struct {
 	dbRepo       DBSagaRepository
-	delivery     pb.DeliveryClient
-	confirmation pb.ConfirmationClient
-	storage      pb.StorageClient
+
+	confirmation ConfirmationClient
+	delivery     DeliveryClient
+	storage      StorageClient
 }
 
 func (s *SagaCoordinator) StartSaga(order *common.Order) error{
@@ -40,11 +42,21 @@ func (s *SagaCoordinator) StartSaga(order *common.Order) error{
 func (s *SagaCoordinator) processSaga(saga *SagaState) error{
 
 	if saga.CurrentStep == 0{
-		err := s.confirmation.SendConfirmation()
+		confirmationTypes := make([]string, 0, len(saga.Payload.Items))
+
+		for i := range len(saga.Payload.Items){
+			confirmationTypes = append(confirmationTypes, saga.Payload.Items[i].ConfirmationType)
+		}
+
+		err := s.confirmation.SendConfirmation(saga.Payload.EmployeeID, confirmationTypes)
+		if err != nil{
+			saga.Error = err.Error()
+			// compensate
+		}
 	}
 
 	if saga.CurrentStep == 1{
-		s.storage.GetItem()
+		s.storage.ReserveItem(sa)
 	}
 
 	if saga.CurrentStep == 2{

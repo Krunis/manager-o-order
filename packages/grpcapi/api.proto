@@ -4,7 +4,7 @@ package grpcapi;
 
 option go_package = "github.com/Krunis/manager-o-order/grpcapi";
 
-service Storage{
+service StorageService{
   rpc ReserveItem(ItemRequest) returns (ItemResponse);
 
   rpc CancelReserve(CancelReserveRequest) returns (CancelReserveResponse);
@@ -30,7 +30,7 @@ message CancelReserveResponse{
   bool success = 1;
 }
 
-service Delivery {
+service DeliveryService {
   rpc SendToQueue(AddressRequest) returns (AddressResponse);
 
   rpc CancelDelivery(CancelDeliveryRequest) returns (CancelDeliveryResponse);
@@ -54,7 +54,7 @@ message CancelDeliveryResponse{
   bool success = 1;
 }
 
-service Confirmation{
+service ConfirmationService{
   rpc SendConfirmation(ConfirmatorInfoRequest) returns (ConfirmatorInfoResponse);
 
   rpc CancelConfirmation(CancelConfirmationRequest) returns (CancelConfirmationResponse);
@@ -63,7 +63,7 @@ service Confirmation{
 
 message ConfirmatorInfoRequest {
   string          confirmation_employee_id = 1;
-  repeated string confirmation_type        = 2;
+  repeated string confirmation_types        = 2;
 }
 
 message ConfirmatorInfoResponse {

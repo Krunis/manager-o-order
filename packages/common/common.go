@@ -19,7 +19,7 @@ type DeliveryInformation struct {
 type Item struct {
 	ID               string `json:"id"`
 	Name             string `json:"name"`
-	Count            uint32  `json:"count"`
+	Count            uint32 `json:"count"`
 	ConfirmationType string `json:"confirmation_type"`
 }
 
@@ -28,6 +28,7 @@ type Order struct {
 	EmployeeID             string               `json:"employee_id"`
 	DepartmentID           string               `json:"department_id"`
 	Items                  []*Item              `json:"items"`
+	ReserveID              string               `json:"reserve_id"`
 	Delivery               *DeliveryInformation `json:"delivery_information"`
 	ConfirmationEmployeeID string               `json:"confirmation_employee_id"`
 	IdempotencyKey         string               `json:"idempotency_key"`
