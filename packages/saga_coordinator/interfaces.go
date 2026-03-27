@@ -34,8 +34,8 @@ type PostgresSagaRepository struct{
 }
 
 type StorageClient interface{
-	ReserveItem(id, name string, count uint32) (string, error)
-	CancelReserve(reserveId string) error
+	ReserveItem(ctx context.Context, item *common.Item) (string, error)
+	CancelReserve(ctx context.Context, reserveId string) error
 }
 
 type StorageGRPC struct{
@@ -43,8 +43,8 @@ type StorageGRPC struct{
 }
 
 type DeliveryClient interface{
-	SendToQueue(table string) error
-	CancelDelivery(orderId string) error
+	SendToQueue(ctx context.Context, table int32) error
+	CancelDelivery(ctx context.Context, orderId string) error
 }
 
 type DeliveryGRPC struct{
@@ -52,8 +52,8 @@ type DeliveryGRPC struct{
 }
 
 type ConfirmationClient interface{
-	SendConfirmation(confirmationEmployeeID string, confirmationType []string) error
-	CancelConfirmation(confirmationId string) error
+	SendConfirmation(ctx context.Context, confirmationEmployeeID string, confirmationType []string) error
+	CancelConfirmation(ctx context.Context, confirmationId string) error
 }
 
 type ConfirmationGRPC struct{

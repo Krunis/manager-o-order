@@ -2,6 +2,7 @@ package sagacoordinator
 
 import (
 	"context"
+	"time"
 
 	"github.com/Krunis/manager-o-order/packages/common"
 	"google.golang.org/grpc"
@@ -36,10 +37,13 @@ func (s *SagaCoordinator) StartSaga(order *common.Order) error{
 
 	saga.ID = id
 
-	return s.processSaga(saga)
+	ctx, cancel = context.WithTimeout(context.Background(), time.Second * 10)
+	defer cancel()
+
+	return s.processSaga(ctx, saga)
 }
 
-func (s *SagaCoordinator) processSaga(saga *SagaState) error{
+func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) error{
 
 	if saga.CurrentStep == 0{
 		confirmationTypes := make([]string, 0, len(saga.Payload.Items))
@@ -48,18 +52,39 @@ func (s *SagaCoordinator) processSaga(saga *SagaState) error{
 			confirmationTypes = append(confirmationTypes, saga.Payload.Items[i].ConfirmationType)
 		}
 
-		err := s.confirmation.SendConfirmation(saga.Payload.EmployeeID, confirmationTypes)
+		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 3)
+
+		err := s.confirmation.SendConfirmation(ctxClient, saga.Payload.EmployeeID, confirmationTypes)
+		cancel()
 		if err != nil{
 			saga.Error = err.Error()
 			// compensate
 		}
+
 	}
 
 	if saga.CurrentStep == 1{
-		s.storage.ReserveItem(sa)
+		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 3)
+
+		for _, item := range saga.Payload.Items{
+			id, err := s.storage.ReserveItem(ctxClient, item)
+			if err != nil{
+				saga.Error = err.Error()
+				// compensate
+			}
+		}
+		cancel()
+		
 	}
 
 	if saga.CurrentStep == 2{
-		s.delivery.SendToQueue()
+		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 3)
+
+		err := s.delivery.SendToQueue(ctxClient, saga.Payload.Delivery.Table)
+		cancel()
+		if err != nil{
+			saga.Error = err.Error()
+			// compensate
+		}
 	}
 }
