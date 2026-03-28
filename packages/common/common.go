@@ -29,6 +29,7 @@ type Order struct {
 	DepartmentID           string               `json:"department_id"`
 	Items                  []*Item              `json:"items"`
 	ReserveID              string               `json:"reserve_id"`
+	ConfirmationId         string               `json:"confirmation_id"`
 	Delivery               *DeliveryInformation `json:"delivery_information"`
 	ConfirmationEmployeeID string               `json:"confirmation_employee_id"`
 	IdempotencyKey         string               `json:"idempotency_key"`

@@ -52,33 +52,53 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 			confirmationTypes = append(confirmationTypes, saga.Payload.Items[i].ConfirmationType)
 		}
 
-		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 3)
+		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 2)
+		defer cancel()
 
-		err := s.confirmation.SendConfirmation(ctxClient, saga.Payload.EmployeeID, confirmationTypes)
-		cancel()
+		confId, err := s.confirmation.SendConfirmation(ctxClient, saga.Payload.EmployeeID, confirmationTypes)
 		if err != nil{
-			saga.Error = err.Error()
-			// compensate
+			return s.compensate(ctx, saga, 0, err)
 		}
 
+		saga.Payload.ConfirmationId = confId
+		saga.CurrentStep = 1
+
+		ctxDB, cancelDB := context.WithTimeout(ctx, time.Second * 1)
+		defer cancelDB()
+
+		if err := s.dbRepo.Update(ctxDB, saga); err != nil{
+			return s.compensate(ctx, saga, 0, err)
+		}
 	}
 
 	if saga.CurrentStep == 1{
-		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 3)
+		var id string
+		var err error
+
+		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 2)
+		defer cancel()
 
 		for _, item := range saga.Payload.Items{
-			id, err := s.storage.ReserveItem(ctxClient, item)
+			id, err = s.storage.ReserveItem(ctxClient, item)
 			if err != nil{
-				saga.Error = err.Error()
-				// compensate
+				return s.compensate(ctx, saga, 1, err)
 			}
 		}
-		cancel()
+
+		saga.Payload.ReserveID = id
+		saga.CurrentStep = 2
+		
+		ctxDB, cancelDB := context.WithTimeout(ctx, time.Second * 1)
+		defer cancelDB()
+
+		if err := s.dbRepo.Update(ctxDB, saga); err != nil{
+			return s.compensate(ctx, saga, 0, err)
+		}
 		
 	}
 
 	if saga.CurrentStep == 2{
-		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 3)
+		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 2)
 
 		err := s.delivery.SendToQueue(ctxClient, saga.Payload.Delivery.Table)
 		cancel()
@@ -87,4 +107,34 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 			// compensate
 		}
 	}
+
+	return nil
+}
+
+func (s *SagaCoordinator) compensate(ctx context.Context, saga *SagaState, failedStep int, err error) error{
+	var res error
+
+	saga.Status = "COMPENSATING"
+	s.dbRepo.Update(ctx, saga)
+
+	 for step := failedStep - 1; step >= 0; step-- {
+        switch step {
+        case 0: // Отмена в ресторане
+            s.confirmation.CancelConfirmation(ctx, saga.Payload.ConfirmationId)
+        case 1: // Возврат денег
+            s.storage.CancelReserve(ctx, saga.Payload.ReserveID)
+        case 2: // Отмена доставки
+            s.delivery.CancelDelivery(ctx, saga.OrderID)
+        }
+        
+    }
+    
+    saga.Status = "FAILED"
+    saga.Error = err.Error()
+    s.dbRepo.Update(ctx, saga)
+    
+    // Отправляем событие о провале
+    // o.producer.Publish("order.events", OrderFailedEvent{saga.OrderID, err})
+    
+    return err
 }

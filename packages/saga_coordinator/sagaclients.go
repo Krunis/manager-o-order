@@ -31,3 +31,54 @@ func (s *StorageGRPC) CancelReserve(ctx context.Context, reserveId string) error
 
 	return nil
 }
+
+func (d *DeliveryGRPC) SendToQueue(ctx context.Context, table int32) error{
+	resp, err := d.delivery.SendToQueue(ctx, &pb.AddressRequest{Table: table})
+	if err != nil{
+		return err
+	}
+	if !resp.Added {
+		return errors.New("unknown error in Delivery")
+	}
+
+	return nil
+}
+
+func (d *DeliveryGRPC) CancelDelivery(ctx context.Context, orderId string) error{
+	resp, err := d.delivery.CancelDelivery(ctx, &pb.CancelDeliveryRequest{OrderId: orderId})
+	if err != nil{
+		return err
+	}
+	if !resp.Success {
+		return errors.New("unknown error in Delivery")
+	}
+
+	return nil
+}
+
+func (c *ConfirmationGRPC) SendConfirmation(ctx context.Context, confirmationEmployeeID string, confirmationType []string) (string, error){
+	resp, err := c.confirmation.SendConfirmation(ctx, &pb.ConfirmatorInfoRequest{
+		ConfirmationEmployeeId: confirmationEmployeeID,
+		ConfirmationType: confirmationType,
+	})
+	if err != nil{
+		return "", err
+	}
+	if !resp.Sent{
+		return "", errors.New("unknown error in Confirmation")
+	}
+
+	return resp.ConfirmationId, nil
+}
+
+func (c *ConfirmationGRPC) CancelConfirmation(ctx context.Context, confirmationId string) error{
+	resp, err := c.confirmation.CancelConfirmation(ctx, &pb.CancelConfirmationRequest{ConfirmationId: confirmationId})
+	if err != nil{
+		return err
+	}
+	if !resp.Success{
+		return errors.New("unknown error in Confirmation")
+	}
+
+	return nil
+}

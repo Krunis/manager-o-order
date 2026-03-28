@@ -52,7 +52,7 @@ type DeliveryGRPC struct{
 }
 
 type ConfirmationClient interface{
-	SendConfirmation(ctx context.Context, confirmationEmployeeID string, confirmationType []string) error
+	SendConfirmation(ctx context.Context, confirmationEmployeeID string, confirmationType []string) (string, error)
 	CancelConfirmation(ctx context.Context, confirmationId string) error
 }
 
