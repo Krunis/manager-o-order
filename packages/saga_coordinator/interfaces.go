@@ -27,10 +27,16 @@ type DBSagaRepository interface {
 	Update(ctx context.Context, state *SagaState) error
 
 	FindByID(ctx context.Context, id string) (*SagaState, error)
+
+	Close()
 }
 
 type PostgresSagaRepository struct{
 	pool *pgxpool.Pool
+}
+
+func NewPostgresSagaRepository(pool *pgxpool.Pool) *PostgresSagaRepository{
+	return &PostgresSagaRepository{pool: pool}
 }
 
 type StorageClient interface{

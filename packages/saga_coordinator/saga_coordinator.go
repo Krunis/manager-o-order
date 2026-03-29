@@ -2,10 +2,14 @@ package sagacoordinator
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Krunis/manager-o-order/packages/common"
+
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	pb "github.com/Krunis/manager-o-order/packages/grpcapi"
 )
@@ -15,11 +19,54 @@ type SagaCoordinator struct {
 	dbRepo       DBSagaRepository
 
 	confirmation ConfirmationClient
-	delivery     DeliveryClient
+	confirmationConn *grpc.ClientConn
+
 	storage      StorageClient
+	storageConn *grpc.ClientConn
+
+	delivery     DeliveryClient
+	deliveryConn *grpc.ClientConn
+
+	lifecycle common.Lifecycle
 }
 
-func (s *SagaCoordinator) StartSaga(order *common.Order) error{
+func (s *SagaCoordinator) StartCoordinator(dbConnnectionString string, confirmationAddress string, storageAddress string, deliveryAddress string) error{
+	var err error
+
+	s.lifecycle.Ctx, s.lifecycle.Cancel = context.WithCancel(context.Background())
+
+	pool, err := common.ConnectToDB(s.lifecycle.Ctx, dbConnnectionString)
+	if err != nil{
+		return err
+	}
+
+	s.dbRepo = NewPostgresSagaRepository(pool)
+
+	s.confirmationConn, err = grpc.NewClient(confirmationAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil{
+		return fmt.Errorf("Failed to connect to Confirmation service: %s", err)
+	}
+
+	s.confirmation = &ConfirmationGRPC{confirmation: pb.NewConfirmationServiceClient(s.confirmationConn)}
+
+	s.storageConn, err = grpc.NewClient(storageAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil{
+		return fmt.Errorf("Failed to connect to Storage service: %s", err)
+	}
+
+	s.storage = &StorageGRPC{storage: pb.NewStorageServiceClient(s.storageConn)}
+
+	s.deliveryConn, err = grpc.NewClient(deliveryAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil{
+		return fmt.Errorf("Failed to connect to Delivery service: %s", err)
+	}
+
+	s.delivery = &DeliveryGRPC{delivery: pb.NewDeliveryServiceClient(s.deliveryConn)}
+
+	return nil
+}
+
+func (s *SagaCoordinator) startSaga(order *common.Order) error{
 	saga := &SagaState{
 		OrderID: order.ID,
 		Status: "ACTIVE",
@@ -92,19 +139,25 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 		defer cancelDB()
 
 		if err := s.dbRepo.Update(ctxDB, saga); err != nil{
-			return s.compensate(ctx, saga, 0, err)
+			return s.compensate(ctx, saga, 1, err)
 		}
 		
 	}
 
 	if saga.CurrentStep == 2{
 		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 2)
-
+		defer cancel()
+		
 		err := s.delivery.SendToQueue(ctxClient, saga.Payload.Delivery.Table)
-		cancel()
 		if err != nil{
-			saga.Error = err.Error()
-			// compensate
+			return s.compensate(ctx, saga, 2, err)
+		}
+
+		ctxDB, cancelDB := context.WithTimeout(ctx, time.Second * 1)
+		defer cancelDB()
+
+		if err := s.dbRepo.Update(ctxDB, saga); err != nil{
+			return s.compensate(ctx, saga, 1, err)
 		}
 	}
 
@@ -112,7 +165,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 }
 
 func (s *SagaCoordinator) compensate(ctx context.Context, saga *SagaState, failedStep int, err error) error{
-	var res error
+	var errs []error
 
 	saga.Status = "COMPENSATING"
 	s.dbRepo.Update(ctx, saga)
@@ -120,21 +173,26 @@ func (s *SagaCoordinator) compensate(ctx context.Context, saga *SagaState, faile
 	 for step := failedStep - 1; step >= 0; step-- {
         switch step {
         case 0: // Отмена в ресторане
-            s.confirmation.CancelConfirmation(ctx, saga.Payload.ConfirmationId)
+            err := s.confirmation.CancelConfirmation(ctx, saga.Payload.ConfirmationId)
+			if err != nil{
+				errs = append(errs, err)
+			}
         case 1: // Возврат денег
-            s.storage.CancelReserve(ctx, saga.Payload.ReserveID)
+            err := s.storage.CancelReserve(ctx, saga.Payload.ReserveID)
+			if err != nil{
+				errs = append(errs, err)
+			}
         case 2: // Отмена доставки
-            s.delivery.CancelDelivery(ctx, saga.OrderID)
+            err := s.delivery.CancelDelivery(ctx, saga.OrderID)
+			if err != nil{
+				errs = append(errs, err)
+			}
         }
-        
     }
-    
+
     saga.Status = "FAILED"
     saga.Error = err.Error()
     s.dbRepo.Update(ctx, saga)
     
-    // Отправляем событие о провале
-    // o.producer.Publish("order.events", OrderFailedEvent{saga.OrderID, err})
-    
-    return err
+    return errors.Join(errs...)
 }

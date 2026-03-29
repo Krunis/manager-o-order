@@ -52,3 +52,7 @@ func (rep *PostgresSagaRepository) FindByID(ctx context.Context, id string) (*Sa
 
 	return state, nil
 }
+
+func (rep *PostgresSagaRepository) Close() {
+	rep.pool.Close()
+}
