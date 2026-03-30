@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/IBM/sarama"
 	"github.com/Krunis/manager-o-order/packages/common"
 	"github.com/jackc/pgx/v4/pgxpool"
 
@@ -64,4 +65,13 @@ type ConfirmationClient interface{
 
 type ConfirmationGRPC struct{
 	confirmation pb.ConfirmationServiceClient
+}
+
+type Consumer interface{
+	Close() error
+	Consume(ctx context.Context, topics []string, handler sarama.ConsumerGroupHandler) error
+}
+
+type SaramaConsumer struct{
+	ConsumerGroup sarama.ConsumerGroup
 }

@@ -27,6 +27,8 @@ type SagaCoordinator struct {
 	delivery     DeliveryClient
 	deliveryConn *grpc.ClientConn
 
+	consumer Consumer
+
 	lifecycle common.Lifecycle
 }
 
@@ -62,6 +64,8 @@ func (s *SagaCoordinator) StartCoordinator(dbConnnectionString string, confirmat
 	}
 
 	s.delivery = &DeliveryGRPC{delivery: pb.NewDeliveryServiceClient(s.deliveryConn)}
+
+	s.consumer.Consume()
 
 	return nil
 }
