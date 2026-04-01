@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/IBM/sarama"
 	"github.com/Krunis/manager-o-order/packages/common"
 	pb "github.com/Krunis/manager-o-order/packages/grpcapi"
 )
@@ -81,4 +82,8 @@ func (c *ConfirmationGRPC) CancelConfirmation(ctx context.Context, confirmationI
 	}
 
 	return nil
+}
+
+func (cons *SaramaConsumer) Consume(ctx context.Context, topics []string, handler sarama.ConsumerGroupHandler) error{
+	return cons.ConsumerGroup.Consume(ctx, topics, handler)
 }

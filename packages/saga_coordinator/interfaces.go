@@ -75,3 +75,4 @@ type Consumer interface{
 type SaramaConsumer struct{
 	ConsumerGroup sarama.ConsumerGroup
 }
+

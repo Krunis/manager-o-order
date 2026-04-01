@@ -17,8 +17,19 @@ func (s *SagaCoordinator) Cleanup(session sarama.ConsumerGroupSession) error {
 }
 
 func (s *SagaCoordinator) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	for {
+		select {
+		case msg, ok := <-claim.Messages():
+			if !ok{
+				return nil
+			}
 
-}
+			s.msgCh <- msg
+
+		case <-session.Context().Done():
+			return session.Context().Err()
+		}
+}}
 
 func NewSaramaConsumer(brokers []string, groupID string) (*SaramaConsumer, error) {
 	config := sarama.NewConfig()
