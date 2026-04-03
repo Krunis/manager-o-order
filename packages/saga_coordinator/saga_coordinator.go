@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"sync"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -33,6 +35,8 @@ type SagaCoordinator struct {
 	consumer Consumer
 
 	msgCh chan *sarama.ConsumerMessage
+
+	wg sync.WaitGroup
 
 	lifecycle common.Lifecycle
 }
@@ -80,6 +84,8 @@ func (s *SagaCoordinator) StartCoordinator(confirmationAddress,
 
 	s.delivery = &DeliveryGRPC{delivery: pb.NewDeliveryServiceClient(s.deliveryConn)}
 
+	s.wg.Go(s.pollMsgCh)
+
 	if err := s.startConsuming(topics); err != nil{
 		return err
 	}
@@ -104,7 +110,7 @@ func (s *SagaCoordinator) startConsuming(topics []string) error {
 
 }
 
-func (s *SagaCoordinator) pollMsgCh() error{
+func (s *SagaCoordinator) pollMsgCh() {
 	for{
 		select{
 		case msg := <-s.msgCh:
@@ -113,14 +119,15 @@ func (s *SagaCoordinator) pollMsgCh() error{
 			json.Unmarshal(msg.Value, &order)
 
 			go s.startSaga(order)
-			// ????????? error
+			
+
 		case <-s.lifecycle.Ctx.Done():
-			return nil
+			return 
 		}
 	}
 }
 
-func (s *SagaCoordinator) startSaga(order *common.Order) error {
+func (s *SagaCoordinator) startSaga(order *common.Order) {
 	saga := &SagaState{
 		OrderID:     order.ID,
 		Status:      "ACTIVE",
@@ -133,7 +140,8 @@ func (s *SagaCoordinator) startSaga(order *common.Order) error {
 
 	id, err := s.dbRepo.Save(ctx, saga)
 	if err != nil {
-		return err
+		log.Printf("Error while save in repo: %s", err)
+		return
 	}
 
 	saga.ID = id
@@ -141,10 +149,13 @@ func (s *SagaCoordinator) startSaga(order *common.Order) error {
 	ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	return s.processSaga(ctx, saga)
+	err = s.processSaga(ctx, saga)
+	if err != nil{
+		log.Printf("Errow while compensating: %s", err)
+	}
 }
 
-func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) error {
+func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) error{
 
 	if saga.CurrentStep == 0 {
 		confirmationTypes := make([]string, 0, len(saga.Payload.Items))
@@ -222,16 +233,20 @@ func (s *SagaCoordinator) compensate(ctx context.Context, saga *SagaState, faile
 	var errs []error
 
 	saga.Status = "COMPENSATING"
-	s.dbRepo.Update(ctx, saga)
+	if err := s.dbRepo.Update(ctx, saga); err != nil{
+		return err
+	}
+
+	log.Printf("Compensation due to error: %s", err)
 
 	for step := failedStep - 1; step >= 0; step-- {
 		switch step {
-		case 0: // Отмена в ресторане
+		case 0: // Отмена подтверждения
 			err := s.confirmation.CancelConfirmation(ctx, saga.Payload.ConfirmationId)
 			if err != nil {
 				errs = append(errs, err)
 			}
-		case 1: // Возврат денег
+		case 1: // Отмена резервации
 			err := s.storage.CancelReserve(ctx, saga.Payload.ReserveID)
 			if err != nil {
 				errs = append(errs, err)
