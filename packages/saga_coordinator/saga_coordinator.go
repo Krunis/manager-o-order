@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -41,19 +42,19 @@ type SagaCoordinator struct {
 	lifecycle common.Lifecycle
 }
 
-func NewCoordinator(dbConnnectionString string) *SagaCoordinator{
+func NewCoordinator(dbConnnectionString string) *SagaCoordinator {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &SagaCoordinator{
 		dbConnnectionString: dbConnnectionString,
-		lifecycle: common.Lifecycle{Ctx: ctx, Cancel: cancel},
-		msgCh: make(chan *sarama.ConsumerMessage, 100),
+		lifecycle:           common.Lifecycle{Ctx: ctx, Cancel: cancel},
+		msgCh:               make(chan *sarama.ConsumerMessage, 100),
 	}
 }
 
 func (s *SagaCoordinator) StartCoordinator(confirmationAddress,
-										   storageAddress,
-										   deliveryAddress string, topics []string) error {
+	storageAddress,
+	deliveryAddress string, topics []string) error {
 	var err error
 
 	pool, err := common.ConnectToDB(s.lifecycle.Ctx, s.dbConnnectionString)
@@ -86,7 +87,7 @@ func (s *SagaCoordinator) StartCoordinator(confirmationAddress,
 
 	s.wg.Go(s.pollMsgCh)
 
-	if err := s.startConsuming(topics); err != nil{
+	if err := s.startConsuming(topics); err != nil {
 		return err
 	}
 
@@ -111,18 +112,17 @@ func (s *SagaCoordinator) startConsuming(topics []string) error {
 }
 
 func (s *SagaCoordinator) pollMsgCh() {
-	for{
-		select{
+	for {
+		select {
 		case msg := <-s.msgCh:
 			var order *common.Order
 
 			json.Unmarshal(msg.Value, &order)
 
 			go s.startSaga(order)
-			
 
 		case <-s.lifecycle.Ctx.Done():
-			return 
+			return
 		}
 	}
 }
@@ -150,12 +150,12 @@ func (s *SagaCoordinator) startSaga(order *common.Order) {
 	defer cancel()
 
 	err = s.processSaga(ctx, saga)
-	if err != nil{
+	if err != nil {
 		log.Printf("Errow while compensating: %s", err)
 	}
 }
 
-func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) error{
+func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) error {
 
 	if saga.CurrentStep == 0 {
 		confirmationTypes := make([]string, 0, len(saga.Payload.Items))
@@ -233,7 +233,7 @@ func (s *SagaCoordinator) compensate(ctx context.Context, saga *SagaState, faile
 	var errs []error
 
 	saga.Status = "COMPENSATING"
-	if err := s.dbRepo.Update(ctx, saga); err != nil{
+	if err := s.dbRepo.Update(ctx, saga); err != nil {
 		return err
 	}
 
@@ -264,4 +264,42 @@ func (s *SagaCoordinator) compensate(ctx context.Context, saga *SagaState, faile
 	s.dbRepo.Update(ctx, saga)
 
 	return errors.Join(errs...)
+}
+
+func (s *SagaCoordinator) Stop() error {
+	var errs []string
+
+	s.lifecycle.Cancel()
+
+	s.wg.Wait()
+
+	if s.consumer != nil {
+		if err := s.consumer.Close(); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
+	if s.deliveryConn != nil {
+		if err := s.deliveryConn.Close(); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
+	if s.storageConn != nil {
+		if err := s.storageConn.Close(); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
+	if s.confirmationConn != nil {
+		if err := s.confirmationConn.Close(); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
+	if s.dbRepo != nil {
+		s.dbRepo.Close()
+	}
+
+	return errors.New(strings.Join(errs, ", "))
 }

@@ -87,3 +87,7 @@ func (c *ConfirmationGRPC) CancelConfirmation(ctx context.Context, confirmationI
 func (cons *SaramaConsumer) Consume(ctx context.Context, topics []string, handler sarama.ConsumerGroupHandler) error{
 	return cons.ConsumerGroup.Consume(ctx, topics, handler)
 }
+
+func (cons *SaramaConsumer) Close() error{
+	return cons.ConsumerGroup.Close()
+}
