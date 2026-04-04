@@ -1,4 +1,4 @@
-package delivery
+package storage
 
 import (
 	"net"
@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-type DeliveryService struct{
-	pb.UnimplementedDeliveryServiceServer
+type StorageService struct{
+	pb.UnimplementedStorageServiceServer
 
 	port string
 
@@ -19,7 +19,7 @@ type DeliveryService struct{
 	lifecycle common.Lifecycle
 }
 
-func (c *DeliveryService) Start() error{
+func (c *StorageService) Start() error{
 	lis, err := net.Listen("tcp", c.port)
 	if err != nil{
 		return err
@@ -27,7 +27,7 @@ func (c *DeliveryService) Start() error{
 
 	c.grpcServer = grpc.NewServer()
 
-	pb.RegisterDeliveryServiceServer(c.grpcServer, c)
+	pb.RegisterStorageServiceServer(c.grpcServer, c)
 
 	if err := c.grpcServer.Serve(lis); err != nil{
 		return err

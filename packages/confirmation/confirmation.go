@@ -20,5 +20,18 @@ type ConfirmationService struct{
 }
 
 func (c *ConfirmationService) Start() error{
-	
+	lis, err := net.Listen("tcp", c.port)
+	if err != nil{
+		return err
+	}
+
+	c.grpcServer = grpc.NewServer()
+
+	pb.RegisterConfirmationServiceServer(c.grpcServer, c)
+
+	if err := c.grpcServer.Serve(lis); err != nil{
+		return err
+	}
+
+	return nil
 }
