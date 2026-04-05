@@ -39,6 +39,8 @@ type SagaCoordinator struct {
 
 	wg sync.WaitGroup
 
+	stopOnce sync.Once
+
 	lifecycle common.Lifecycle
 }
 
@@ -269,37 +271,45 @@ func (s *SagaCoordinator) compensate(ctx context.Context, saga *SagaState, faile
 func (s *SagaCoordinator) Stop() error {
 	var errs []string
 
-	s.lifecycle.Cancel()
+	var res error
 
-	s.wg.Wait()
+	s.stopOnce.Do(func() {
+		s.lifecycle.Cancel()
 
-	if s.consumer != nil {
-		if err := s.consumer.Close(); err != nil {
-			errs = append(errs, err.Error())
+		s.wg.Wait()
+
+		if s.consumer != nil {
+			if err := s.consumer.Close(); err != nil {
+				errs = append(errs, err.Error())
+			}
 		}
-	}
 
-	if s.deliveryConn != nil {
-		if err := s.deliveryConn.Close(); err != nil {
-			errs = append(errs, err.Error())
+		if s.deliveryConn != nil {
+			if err := s.deliveryConn.Close(); err != nil {
+				errs = append(errs, err.Error())
+			}
 		}
-	}
 
-	if s.storageConn != nil {
-		if err := s.storageConn.Close(); err != nil {
-			errs = append(errs, err.Error())
+		if s.storageConn != nil {
+			if err := s.storageConn.Close(); err != nil {
+				errs = append(errs, err.Error())
+			}
 		}
-	}
 
-	if s.confirmationConn != nil {
-		if err := s.confirmationConn.Close(); err != nil {
-			errs = append(errs, err.Error())
+		if s.confirmationConn != nil {
+			if err := s.confirmationConn.Close(); err != nil {
+				errs = append(errs, err.Error())
+			}
 		}
-	}
 
-	if s.dbRepo != nil {
-		s.dbRepo.Close()
-	}
+		if s.dbRepo != nil {
+			s.dbRepo.Close()
+		}
 
-	return errors.New(strings.Join(errs, ", "))
+		if len(errs) > 0 {
+			res = errors.New(strings.Join(errs, ", "))
+		}
+	})
+
+	return res
 }

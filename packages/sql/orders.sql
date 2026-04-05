@@ -6,12 +6,12 @@ CREATE TABLE IF NOT EXISTS orders(
     employee_id TEXT,
     department_id TEXT,
     status TEXT NOT NULL DEFAULT 'PENDING',
-    confirmation_employee_id TEXT,
+    confirmation_employee_id TEXT REFERENCES employee(id),
 
     idemp_key TEXT UNIQUE,
 
     confirmation_status TEXT,
-    delivert_status TEXT,
+    delivery_status TEXT,
     notification_status TEXT,
     storage_status TEXT,
 
@@ -43,4 +43,15 @@ CREATE TABLE IF NOT EXISTS saga_states(
     
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS employees(
+    id TEXT PRIMARY KEY,
+    department TEXT
+);
+
+CREATE TABLE IF NOT EXISTS storage(
+    item_id TEXT PRIMARY KEY,
+    item_name TEXT,
+    count INT
 );
