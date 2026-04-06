@@ -44,14 +44,3 @@ CREATE TABLE IF NOT EXISTS saga_states(
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
-CREATE TABLE IF NOT EXISTS employees(
-    id TEXT PRIMARY KEY,
-    department TEXT
-);
-
-CREATE TABLE IF NOT EXISTS storage(
-    item_id TEXT PRIMARY KEY,
-    item_name TEXT,
-    count INT
-);
