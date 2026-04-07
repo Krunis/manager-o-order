@@ -41,7 +41,7 @@ func NewPostgresSagaRepository(pool *pgxpool.Pool) *PostgresSagaRepository{
 }
 
 type StorageClient interface{
-	ReserveItem(ctx context.Context, item *common.Item) (string, error)
+	ReserveItem(ctx context.Context, item *common.Item) (reserveId string, err error)
 	CancelReserve(ctx context.Context, reserveId string) error
 }
 
@@ -59,7 +59,7 @@ type DeliveryGRPC struct{
 }
 
 type ConfirmationClient interface{
-	SendConfirmation(ctx context.Context, confirmationEmployeeID string, confirmationType []string) (string, error)
+	SendConfirmation(ctx context.Context, confirmationEmployeeID string, confirmationType []string) (confiormationId string, err error)
 	CancelConfirmation(ctx context.Context, confirmationId string) error
 }
 

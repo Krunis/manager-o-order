@@ -1,10 +1,15 @@
 package confirmation
 
 import (
+	"context"
+	"errors"
 	"net"
+	"time"
 
 	"github.com/Krunis/manager-o-order/packages/common"
 	pb "github.com/Krunis/manager-o-order/packages/grpcapi"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 )
 
@@ -15,6 +20,8 @@ type ConfirmationService struct{
 
 	lis net.Listener
 	grpcServer *grpc.Server
+
+	poolDB *pgxpool.Pool
 
 	lifecycle common.Lifecycle
 }
@@ -34,4 +41,42 @@ func (c *ConfirmationService) Start() error{
 	}
 
 	return nil
+}
+
+func (c *ConfirmationService) SendConfirmation(ctx context.Context, req *pb.ConfirmatorInfoRequest) (*pb.ConfirmatorInfoResponse, error){
+	id := uuid.New()
+
+	for _, confType := range req.ConfirmationType{
+		go func(){
+			time.Sleep(time.Millisecond * 50)
+		}()
+	}
+
+	_, err := c.poolDB.Exec(ctx, `INSERT INTO confirmations(id, employee_id)
+						VALUES($1, $2)
+						`, id, req.ConfirmationEmployeeId)
+	if err != nil{
+		return nil, err
+	}
+	
+	return &pb.ConfirmatorInfoResponse{Sent: true, ConfirmationId: id.String()}, nil
+}
+
+func (c *ConfirmationService) CancelConfirmation(ctx context.Context, req *pb.CancelConfirmationRequest) (*pb.CancelConfirmationResponse, error){
+	go func(){
+		time.Sleep(time.Millisecond * 50)
+	}()
+
+	tag, err := c.poolDB.Exec(ctx, `DELETE FROM confirmations
+								  WHERE id = $1
+								  `, req.ConfirmationId)
+	if err != nil{
+		return nil, err
+	}
+	if tag.RowsAffected() == 0{
+		return nil, errors.New("unknown confirmation_id")
+	}
+
+	return &pb.CancelConfirmationResponse{Success: true}, nil
+	
 }

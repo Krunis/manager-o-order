@@ -27,7 +27,7 @@ func (s *StorageGRPC) CancelReserve(ctx context.Context, reserveId string) error
 		return err
 	}
 	if !resp.Success{
-		return errors.New("unknown error in Storage")
+		return errors.New("unknown reserve_id")
 	}
 
 	return nil

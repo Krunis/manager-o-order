@@ -13,4 +13,9 @@ CREATE TABLE IF NOT EXISTS reservations(
     id TEXT PRIMARY KEY,
     item_id TEXT REFERENCES storage(item_id),
     count INT
-)
+);
+
+CREATE TABLE IF NOT EXISTS confirmations(
+    id TEXT PRIMARY KEY,
+    employee_id TEXT REFERENCES employees(id)
+);

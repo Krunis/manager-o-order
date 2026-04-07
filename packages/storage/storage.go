@@ -67,6 +67,16 @@ func (s *StorageService) ReserveItem(ctx context.Context, req *pb.ItemRequest) (
 
 }
 
-func (s *StorageService) CancelReserve(context.Context, *pb.CancelReserveRequest) (*pb.CancelReserveResponse, error){
-	return nil, nil
+func (s *StorageService) CancelReserve(ctx context.Context, req *pb.CancelReserveRequest) (*pb.CancelReserveResponse, error){
+	tag, err := s.poolDB.Exec(ctx, `DELETE FROM reservations
+							   		WHERE id = $1 
+							   		`, req.ReserveId)
+	if err != nil{
+		return nil, err
+	}
+	if tag.RowsAffected() == 0{
+		return &pb.CancelReserveResponse{Success: false}, nil
+	}
+
+	return &pb.CancelReserveResponse{Success: true}, nil
 }
