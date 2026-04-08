@@ -19,3 +19,4 @@ CREATE TABLE IF NOT EXISTS confirmations(
     id TEXT PRIMARY KEY,
     employee_id TEXT REFERENCES employees(id)
 );
+

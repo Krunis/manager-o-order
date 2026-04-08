@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"context"
 	"net"
 
 	"github.com/Krunis/manager-o-order/packages/common"
@@ -16,22 +17,32 @@ type DeliveryService struct{
 	lis net.Listener
 	grpcServer *grpc.Server
 
+	
+
 	lifecycle common.Lifecycle
 }
 
-func (c *DeliveryService) Start() error{
-	lis, err := net.Listen("tcp", c.port)
+func (d *DeliveryService) Start() error{
+	lis, err := net.Listen("tcp", d.port)
 	if err != nil{
 		return err
 	}
 
-	c.grpcServer = grpc.NewServer()
+	d.grpcServer = grpc.NewServer()
 
-	pb.RegisterDeliveryServiceServer(c.grpcServer, c)
+	pb.RegisterDeliveryServiceServer(d.grpcServer, d)
 
-	if err := c.grpcServer.Serve(lis); err != nil{
+	if err := d.grpcServer.Serve(lis); err != nil{
 		return err
 	}
 
 	return nil
+}
+
+func (d *DeliveryService) SendToQueue(ctx context.Context, req *pb.AddressRequest) (*pb.AddressResponse, error){
+	
+}
+
+func (d *DeliveryService) CancelDelivery(ctx context.Context, req *pb.CancelDeliveryRequest) (*pb.CancelDeliveryResponse, error){
+
 }

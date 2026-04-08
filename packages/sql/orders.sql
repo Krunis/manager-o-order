@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS orders(
     idemp_key TEXT UNIQUE,
 
     confirmation_status TEXT,
+    storage_status TEXT,
     delivery_status TEXT,
     notification_status TEXT,
-    storage_status TEXT,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
