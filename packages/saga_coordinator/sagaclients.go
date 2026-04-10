@@ -60,7 +60,7 @@ func (d *DeliveryGRPC) CancelDelivery(ctx context.Context, orderId string) error
 func (c *ConfirmationGRPC) SendConfirmation(ctx context.Context, confirmationEmployeeID string, confirmationType []string) (string, error){
 	resp, err := c.confirmation.SendConfirmation(ctx, &pb.ConfirmatorInfoRequest{
 		ConfirmationEmployeeId: confirmationEmployeeID,
-		ConfirmationType: confirmationType,
+		ConfirmationTypes: confirmationType,
 	})
 	if err != nil{
 		return "", err

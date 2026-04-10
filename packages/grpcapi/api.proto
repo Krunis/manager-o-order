@@ -38,6 +38,7 @@ service DeliveryService {
 }
 
 message AddressRequest{
+  string order_id = 2;
   int32 table = 1;
 }
 

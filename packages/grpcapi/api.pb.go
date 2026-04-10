@@ -223,6 +223,7 @@ func (x *CancelReserveResponse) GetSuccess() bool {
 
 type AddressRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderId       string                 `protobuf:"bytes,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	Table         int32                  `protobuf:"varint,1,opt,name=table,proto3" json:"table,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -256,6 +257,13 @@ func (x *AddressRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use AddressRequest.ProtoReflect.Descriptor instead.
 func (*AddressRequest) Descriptor() ([]byte, []int) {
 	return file_api_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AddressRequest) GetOrderId() string {
+	if x != nil {
+		return x.OrderId
+	}
+	return ""
 }
 
 func (x *AddressRequest) GetTable() int32 {
@@ -408,7 +416,7 @@ func (x *CancelDeliveryResponse) GetSuccess() bool {
 type ConfirmatorInfoRequest struct {
 	state                  protoimpl.MessageState `protogen:"open.v1"`
 	ConfirmationEmployeeId string                 `protobuf:"bytes,1,opt,name=confirmation_employee_id,json=confirmationEmployeeId,proto3" json:"confirmation_employee_id,omitempty"`
-	ConfirmationType       []string               `protobuf:"bytes,2,rep,name=confirmation_type,json=confirmationType,proto3" json:"confirmation_type,omitempty"`
+	ConfirmationTypes      []string               `protobuf:"bytes,2,rep,name=confirmation_types,json=confirmationTypes,proto3" json:"confirmation_types,omitempty"`
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -450,9 +458,9 @@ func (x *ConfirmatorInfoRequest) GetConfirmationEmployeeId() string {
 	return ""
 }
 
-func (x *ConfirmatorInfoRequest) GetConfirmationType() []string {
+func (x *ConfirmatorInfoRequest) GetConfirmationTypes() []string {
 	if x != nil {
-		return x.ConfirmationType
+		return x.ConfirmationTypes
 	}
 	return nil
 }
@@ -614,8 +622,9 @@ const file_api_proto_rawDesc = "" +
 	"\n" +
 	"reserve_id\x18\x01 \x01(\tR\treserveId\"1\n" +
 	"\x15CancelReserveResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"&\n" +
-	"\x0eAddressRequest\x12\x14\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"A\n" +
+	"\x0eAddressRequest\x12\x19\n" +
+	"\border_id\x18\x02 \x01(\tR\aorderId\x12\x14\n" +
 	"\x05table\x18\x01 \x01(\x05R\x05table\"D\n" +
 	"\x0fAddressResponse\x12\x14\n" +
 	"\x05added\x18\x01 \x01(\bR\x05added\x12\x1b\n" +
@@ -623,10 +632,10 @@ const file_api_proto_rawDesc = "" +
 	"\x15CancelDeliveryRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\"2\n" +
 	"\x16CancelDeliveryResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x7f\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x81\x01\n" +
 	"\x16ConfirmatorInfoRequest\x128\n" +
-	"\x18confirmation_employee_id\x18\x01 \x01(\tR\x16confirmationEmployeeId\x12+\n" +
-	"\x11confirmation_type\x18\x02 \x03(\tR\x10confirmationType\"V\n" +
+	"\x18confirmation_employee_id\x18\x01 \x01(\tR\x16confirmationEmployeeId\x12-\n" +
+	"\x12confirmation_types\x18\x02 \x03(\tR\x11confirmationTypes\"V\n" +
 	"\x17ConfirmatorInfoResponse\x12\x12\n" +
 	"\x04sent\x18\x01 \x01(\bR\x04sent\x12'\n" +
 	"\x0fconfirmation_id\x18\x02 \x01(\tR\x0econfirmationId\"D\n" +

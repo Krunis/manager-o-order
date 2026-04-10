@@ -20,3 +20,9 @@ CREATE TABLE IF NOT EXISTS confirmations(
     employee_id TEXT REFERENCES employees(id)
 );
 
+CREATE TABLE IF NOT EXISTS delivery(
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id TEXT,
+    table INTEGER
+);
+
