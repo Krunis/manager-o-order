@@ -51,8 +51,8 @@ func (d *DeliveryService) SendToQueue(ctx context.Context, req *pb.AddressReques
 	defer tx.Rollback(ctx)
 	
 	tag, err := tx.Exec(ctx, `INSERT INTO delivery(order_id, table)
-							   VALUES($1, $2)`,
-		req.OrderId, req.Table)
+							  VALUES($1, $2)`,
+							  req.OrderId, req.Table)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +74,43 @@ func (d *DeliveryService) SendToQueue(ctx context.Context, req *pb.AddressReques
 	if err := tx.Commit(ctx); err != nil{
 		return nil, err
 	}
+
+	return &pb.AddressResponse{Added: true}, nil
 }
 
 func (d *DeliveryService) CancelDelivery(ctx context.Context, req *pb.CancelDeliveryRequest) (*pb.CancelDeliveryResponse, error) {
-	
+	tx, err := d.poolDB.Begin(ctx)
+	if err != nil{
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	tag, err := tx.Exec(ctx, `
+							  DELETE FROM delivery
+							  WHERE order_id=$1`,
+							  req.OrderId)
+	if err != nil{
+		return nil, err
+	}
+	if tag.RowsAffected() == 0{
+		return &pb.CancelDeliveryResponse{Success: false}, nil
+	}
+
+	tag, err = tx.Exec(ctx, `
+							 UPDATE orders
+							 SET delivery_status=$1
+							 WHERE id=$2`,
+							 "CANCELLED", req.OrderId)
+	if err != nil{
+		return nil, err
+	}
+	if tag.RowsAffected() == 0{
+		return &pb.CancelDeliveryResponse{Success: false}, nil
+	}
+
+	if err := tx.Commit(ctx); err != nil{
+		return nil, err
+	}
+
+	return &pb.CancelDeliveryResponse{Success: true}, nil
 }

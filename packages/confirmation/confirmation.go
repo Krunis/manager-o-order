@@ -46,7 +46,7 @@ func (c *ConfirmationService) Start() error{
 func (c *ConfirmationService) SendConfirmation(ctx context.Context, req *pb.ConfirmatorInfoRequest) (*pb.ConfirmatorInfoResponse, error){
 	id := uuid.New()
 
-	for _, confType := range req.ConfirmationType{
+	for _, confType := range req.ConfirmationTypes{
 		go func(){
 			time.Sleep(time.Millisecond * 50)
 		}()

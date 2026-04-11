@@ -21,8 +21,7 @@ CREATE TABLE IF NOT EXISTS confirmations(
 );
 
 CREATE TABLE IF NOT EXISTS delivery(
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    order_id TEXT,
+    order_id TEXT PRIMARY KEY REFERENCES orders(id),
     table INTEGER
 );
 
