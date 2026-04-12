@@ -2,12 +2,13 @@ package storage
 
 import (
 	"context"
+	"log"
 	"net"
 
 	"github.com/Krunis/manager-o-order/packages/common"
 	pb "github.com/Krunis/manager-o-order/packages/grpcapi"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 )
 
@@ -79,4 +80,16 @@ func (s *StorageService) CancelReserve(ctx context.Context, req *pb.CancelReserv
 	}
 
 	return &pb.CancelReserveResponse{Success: true}, nil
+}
+
+func (s *StorageService) Stop(){
+	if s.grpcServer != nil {
+		s.grpcServer.GracefulStop()
+	}
+
+	if s.poolDB != nil{
+		s.poolDB.Close()
+	}
+
+	log.Println("StorageService stopped")
 }

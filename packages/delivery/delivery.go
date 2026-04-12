@@ -114,3 +114,15 @@ func (d *DeliveryService) CancelDelivery(ctx context.Context, req *pb.CancelDeli
 
 	return &pb.CancelDeliveryResponse{Success: true}, nil
 }
+
+func (d *DeliveryService) Stop(){
+	if d.grpcServer != nil {
+		d.grpcServer.GracefulStop()
+	}
+
+	if d.poolDB != nil{
+		d.poolDB.Close()
+	}
+
+	log.Println("DeliveryService stopped")
+}
