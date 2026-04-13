@@ -48,7 +48,7 @@ func NewGatewayServer(port, kafkaAddress string) *GatewayServer {
 	}
 }
 
-func (g *GatewayServer) Start() error {
+func (g *GatewayServer) Start(dbConnectionString string) error {
 	var err error
 
 	g.saramaProducer, err = NewSaramaProducer(g.kafkaAddress)
@@ -60,7 +60,7 @@ func (g *GatewayServer) Start() error {
 		ctx, cancel := context.WithCancel(g.lifecycle.Ctx)
 		defer cancel()
 
-		g.poolDB, err = common.ConnectToDB(ctx, common.GetDBConnectionString())
+		g.poolDB, err = common.ConnectToDB(ctx, dbConnectionString)
 		if err != nil {
 			return err
 		}
@@ -105,7 +105,9 @@ func (g *GatewayServer) Start() error {
 
 	select {
 	case err := <-errCh:
-		return err
+		log.Printf("Error while working: %s", err)
+		
+		return g.Stop()
 	case <-g.lifecycle.Ctx.Done():
 		return nil
 	}

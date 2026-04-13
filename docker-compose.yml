@@ -77,13 +77,13 @@ services:
     depends_on:
       - kafka
       - postgres
+
   confirmation:
     build:
       context: .
       dockerfile: confirmation-dockerfile
     ports:
       - "8084:8084"
-      
   storage:
     build:
       context: .
