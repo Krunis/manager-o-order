@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/Krunis/manager-o-order/packages/common"
@@ -23,19 +24,31 @@ type ConfirmationService struct {
 	grpcServer *grpc.Server
 
 	poolDB *pgxpool.Pool
+	dbConnectionString string
+
+	stopOnce sync.Once
 
 	lifecycle common.Lifecycle
 }
 
-func (c *ConfirmationService) Start(dbConnectionString string) error {
+func NewConfirmationService(dbConnectionString string) *ConfirmationService{
+	ctx, cancel := context.WithCancel(context.Background())
+
+	return &ConfirmationService{
+		dbConnectionString: dbConnectionString,
+		lifecycle: common.Lifecycle{Ctx: ctx, Cancel: cancel},
+	}
+}
+
+func (c *ConfirmationService) Start(port string) error {
 	var err error
 
-	c.poolDB, err = common.ConnectToDB(c.lifecycle.Ctx, dbConnectionString)
+	c.poolDB, err = common.ConnectToDB(c.lifecycle.Ctx, c.dbConnectionString)
 	if err != nil {
 		return err
 	}
 
-	lis, err := net.Listen("tcp", c.port)
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		return err
 	}
@@ -89,14 +102,17 @@ func (c *ConfirmationService) CancelConfirmation(ctx context.Context, req *pb.Ca
 
 }
 
-func (c *ConfirmationService) Stop(){
-	if c.grpcServer != nil {
-		c.grpcServer.GracefulStop()
-	}
+func (c *ConfirmationService) Stop() {
+	c.stopOnce.Do(func() {
+		if c.grpcServer != nil {
+			c.grpcServer.GracefulStop()
+		}
 
-	if c.poolDB != nil{
-		c.poolDB.Close()
-	}
+		if c.poolDB != nil {
+			c.poolDB.Close()
+		}
 
-	log.Println("ConfirmationService stopped")
+		log.Println("ConfirmationService stopped")
+	})
+
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"sync"
 
 	"github.com/Krunis/manager-o-order/packages/common"
 	pb "github.com/Krunis/manager-o-order/packages/grpcapi"
@@ -12,22 +13,42 @@ import (
 	"google.golang.org/grpc"
 )
 
-type StorageService struct{
+type StorageService struct {
 	pb.UnimplementedStorageServiceServer
 
 	port string
 
-	lis net.Listener
+	lis        net.Listener
 	grpcServer *grpc.Server
 
 	poolDB *pgxpool.Pool
+	dbConnectionString string
+
+	stopOnce sync.Once
 
 	lifecycle common.Lifecycle
 }
 
-func (c *StorageService) Start() error{
-	lis, err := net.Listen("tcp", c.port)
+func NewStorageService(dbConnectionString string) *StorageService{
+	ctx, cancel := context.WithCancel(context.Background())
+
+	return &StorageService{
+		dbConnectionString: dbConnectionString,
+		lifecycle: common.Lifecycle{Ctx: ctx, Cancel: cancel},
+	}
+}
+
+
+func (c *StorageService) Start(port string) error {
+	var err error
+
+	c.poolDB, err = common.ConnectToDB(c.lifecycle.Ctx, c.dbConnectionString)
 	if err != nil{
+		return err
+	}
+
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
 		return err
 	}
 
@@ -35,14 +56,14 @@ func (c *StorageService) Start() error{
 
 	pb.RegisterStorageServiceServer(c.grpcServer, c)
 
-	if err := c.grpcServer.Serve(lis); err != nil{
+	if err := c.grpcServer.Serve(lis); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *StorageService) ReserveItem(ctx context.Context, req *pb.ItemRequest) (*pb.ItemResponse, error){
+func (s *StorageService) ReserveItem(ctx context.Context, req *pb.ItemRequest) (*pb.ItemResponse, error) {
 	var id string
 
 	row := s.poolDB.QueryRow(ctx, `SELECT item_id
@@ -51,16 +72,16 @@ func (s *StorageService) ReserveItem(ctx context.Context, req *pb.ItemRequest) (
 							`, req.Id, req.Name, req.Count)
 
 	err := row.Scan(&id)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
 	reserveId := uuid.New()
-	
+
 	_, err = s.poolDB.Exec(ctx, `INSERT INTO reservations(id, item_id, count)
 							   VALUES($1, $2, $3)
 							   `, reserveId.String(), req.Id, req.Count)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
@@ -68,28 +89,31 @@ func (s *StorageService) ReserveItem(ctx context.Context, req *pb.ItemRequest) (
 
 }
 
-func (s *StorageService) CancelReserve(ctx context.Context, req *pb.CancelReserveRequest) (*pb.CancelReserveResponse, error){
+func (s *StorageService) CancelReserve(ctx context.Context, req *pb.CancelReserveRequest) (*pb.CancelReserveResponse, error) {
 	tag, err := s.poolDB.Exec(ctx, `DELETE FROM reservations
 							   		WHERE id = $1 
 							   		`, req.ReserveId)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
-	if tag.RowsAffected() == 0{
+	if tag.RowsAffected() == 0 {
 		return &pb.CancelReserveResponse{Success: false}, nil
 	}
 
 	return &pb.CancelReserveResponse{Success: true}, nil
 }
 
-func (s *StorageService) Stop(){
-	if s.grpcServer != nil {
-		s.grpcServer.GracefulStop()
-	}
+func (s *StorageService) Stop() {
+	s.stopOnce.Do(func() {
+		if s.grpcServer != nil {
+			s.grpcServer.GracefulStop()
+		}
 
-	if s.poolDB != nil{
-		s.poolDB.Close()
-	}
+		if s.poolDB != nil {
+			s.poolDB.Close()
+		}
 
-	log.Println("StorageService stopped")
+		log.Println("StorageService stopped")
+	})
+
 }

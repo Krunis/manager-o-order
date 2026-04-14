@@ -21,7 +21,6 @@ import (
 
 type SagaCoordinator struct {
 	dbRepo DBSagaRepository
-
 	dbConnnectionString string
 
 	confirmation     ConfirmationClient
