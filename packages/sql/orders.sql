@@ -1,12 +1,17 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+CREATE TABLE IF NOT EXISTS employees(
+    id TEXT PRIMARY KEY,
+    department TEXT
+);
+
 CREATE TABLE IF NOT EXISTS orders(
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
     employee_id TEXT,
     department_id TEXT,
     status TEXT NOT NULL DEFAULT 'PENDING',
-    confirmation_employee_id TEXT REFERENCES employee(id),
+    confirmation_employee_id TEXT REFERENCES employees(id),
 
     idemp_key TEXT UNIQUE,
 
@@ -44,3 +49,26 @@ CREATE TABLE IF NOT EXISTS saga_states(
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS storage(
+    item_id TEXT PRIMARY KEY,
+    item_name TEXT,
+    count INT
+);
+
+CREATE TABLE IF NOT EXISTS reservations(
+    id TEXT PRIMARY KEY,
+    item_id TEXT REFERENCES storage(item_id),
+    count INT
+);
+
+CREATE TABLE IF NOT EXISTS confirmations(
+    id TEXT PRIMARY KEY,
+    employee_id TEXT REFERENCES employees(id)
+);
+
+CREATE TABLE IF NOT EXISTS delivery(
+    order_id UUID PRIMARY KEY REFERENCES orders(id),
+    table_number INTEGER
+);
+

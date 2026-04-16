@@ -65,6 +65,11 @@ func (s *SagaCoordinator) StartCoordinator(confirmationAddress,
 
 	s.dbRepo = NewPostgresSagaRepository(pool)
 
+	s.consumer, err = NewSaramaConsumer([]string{"kafka:9092"}, "A")
+	if err != nil{
+		return fmt.Errorf("Failed to connect to Kafka: %s", err)
+	}
+
 	s.confirmationConn, err = grpc.NewClient(confirmationAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("Failed to connect to Confirmation service: %s", err)

@@ -44,6 +44,7 @@ func NewGatewayServer(port, kafkaAddress string) *GatewayServer {
 	return &GatewayServer{
 		address:   port,
 		mux:       mux,
+		kafkaAddress: kafkaAddress,
 		lifecycle: common.Lifecycle{Ctx: ctx, Cancel: cancel},
 	}
 }

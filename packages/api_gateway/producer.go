@@ -1,13 +1,18 @@
 package apigateway
 
 import (
+	"errors"
 	"log"
 	"time"
 
 	"github.com/IBM/sarama"
 )
 
-func NewSaramaProducer(port string) (sarama.SyncProducer, error){
+func NewSaramaProducer(address string) (sarama.SyncProducer, error){
+	if address == ""{
+		return nil, errors.New("no kafka address")
+	}
+
 	config := sarama.NewConfig()
 
 	config.Producer.RequiredAcks = sarama.WaitForAll
@@ -28,7 +33,7 @@ func NewSaramaProducer(port string) (sarama.SyncProducer, error){
 	config.Net.ReadTimeout = 30 * time.Second
 	config.Net.WriteTimeout = 30 * time.Second
 
-	return sarama.NewSyncProducer([]string{port}, config)
+	return sarama.NewSyncProducer([]string{address}, config)
 }
 
 func (g *GatewayServer) sendInKafka(topic string, key, value []byte) error{

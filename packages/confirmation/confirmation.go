@@ -70,6 +70,7 @@ func (c *ConfirmationService) SendConfirmation(ctx context.Context, req *pb.Conf
 	for _, confType := range req.ConfirmationTypes {
 		go func() {
 			time.Sleep(time.Millisecond * 50)
+			log.Println(confType)
 		}()
 	}
 

@@ -11,7 +11,7 @@ func main() {
 	gate := apigateway.NewGatewayServer(":8080", "kafka:9092")
 
 	if err := gate.Start(common.GetDBConnectionString()); err != nil{
-		log.Println(err)
+		log.Println("in start error: ", err)
 	}
 
 
