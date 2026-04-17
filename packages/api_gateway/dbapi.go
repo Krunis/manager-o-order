@@ -26,7 +26,7 @@ func (g *GatewayServer) sendInPostgres(ctx context.Context, order *common.Order)
 		return "", err
 	}
 
-	log.Println("New in MAIN")
+	log.Println("Inserted in ORDERS")
 
 	key := order.EmployeeID + order.DepartmentID
 
@@ -42,7 +42,7 @@ func (g *GatewayServer) sendInPostgres(ctx context.Context, order *common.Order)
 		return "", err
 	}
 
-	log.Println("New in OUTBOX")
+	log.Println("Inserted in OUTBOX")
 	
 	return id, tx.Commit(ctx)
 

@@ -16,29 +16,46 @@ func (g *GatewayServer) startPolling() {
 			ctx, cancel := context.WithTimeout(g.lifecycle.Ctx, time.Millisecond*400)
 			defer cancel()
 
-			rows, err := g.poolDB.Query(ctx, `SELECT topic, key, payload FROM outbox
-										 WHERE sent_at=NULL`)
-			if err != nil {
-				log.Printf("Failed to poll from outbox: %s", err)
-			}
-
-			var topic, key string
-
-			var value []byte
-
-			for rows.Next() {
-				err := rows.Scan(&topic, &key, &value) // row from outbox
+			func() {
+				tx, err := g.poolDB.Begin(ctx)
 				if err != nil {
-					log.Printf("Errow while scan row: %s", err)
+					log.Println(err)
+				}
+				defer tx.Rollback(ctx)
+
+				rows, err := tx.Query(ctx, `UPDATE outbox
+										SET sent_at=NOW()
+										WHERE idemp_key IN (
+											SELECT idemp_key
+											FROM outbox
+											WHERE sent_at IS NULL
+											LIMIT 100
+											)
+										RETURNING topic, key, payload`)
+				if err != nil {
+					log.Printf("Failed to poll from outbox: %s", err)
 				}
 
-				if err := g.sendInKafka(topic, []byte(key), value); err != nil {
-					log.Printf("Error while send in Kafka: %s", err)
+				var topic, key string
+
+				var value []byte
+
+				for rows.Next() {
+					err := rows.Scan(&topic, &key, &value)
+					if err != nil {
+						log.Printf("Errow while scan row: %s", err)
+					}
+
+					if err := g.sendInKafka(topic, []byte(key), value); err != nil {
+						log.Printf("Error while send in Kafka: %s", err)
+					}
 				}
-			}
+
+				tx.Commit(ctx)
+			}()
 
 		case <-g.lifecycle.Ctx.Done():
-			return 
+			return
 		}
 	}
 }

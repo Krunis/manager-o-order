@@ -97,6 +97,7 @@ func (g *GatewayServer) Start(dbConnectionString string) error {
 	errCh := make(chan error, 1)
 
 	go func() {
+		log.Println("Starting listening...")
 		if err := g.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errCh <- err
 		} else {
@@ -151,6 +152,7 @@ func (g *GatewayServer) NewOrderHandler(w http.ResponseWriter, r *http.Request) 
 			http.Error(w, "order already exists", http.StatusConflict)
 			return
 		}
+		log.Println("Checked in Redis")
 
 		ctxPG, cancel := context.WithTimeout(r.Context(), time.Second*1)
 		defer cancel()
@@ -160,6 +162,7 @@ func (g *GatewayServer) NewOrderHandler(w http.ResponseWriter, r *http.Request) 
 			http.Error(w, "failed to create order", http.StatusInternalServerError)
 			return
 		}
+		log.Println("Sent in Postgres")
 
 		resp := struct {
 			OrderId       string `json:"order_id"`

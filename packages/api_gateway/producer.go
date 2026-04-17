@@ -43,7 +43,6 @@ func (g *GatewayServer) sendInKafka(topic string, key, value []byte) error{
 		Value: sarama.ByteEncoder(value),
 	})
 	if err != nil{
-		log.Printf("Failed to sent: %s", err)
 		return err
 	}
 
