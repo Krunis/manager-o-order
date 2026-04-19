@@ -13,10 +13,10 @@ func (g *GatewayServer) startPolling() {
 	for {
 		select {
 		case <-timer.C:
-			ctx, cancel := context.WithTimeout(g.lifecycle.Ctx, time.Millisecond*400)
-			defer cancel()
-
 			func() {
+				ctx, cancel := context.WithTimeout(g.lifecycle.Ctx, time.Millisecond*400)
+				defer cancel()
+
 				tx, err := g.poolDB.Begin(ctx)
 				if err != nil {
 					log.Println(err)
@@ -49,11 +49,14 @@ func (g *GatewayServer) startPolling() {
 					if err := g.sendInKafka(topic, []byte(key), value); err != nil {
 						log.Printf("Error while send in Kafka: %s", err)
 					}
+
+					log.Printf("Sent in Kafka: key: %s", key)
 				}
 
 				tx.Commit(ctx)
 			}()
 
+			timer.Reset(time.Second * 1)
 		case <-g.lifecycle.Ctx.Done():
 			return
 		}

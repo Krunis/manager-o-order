@@ -8,7 +8,7 @@ func (rep *PostgresSagaRepository) Save(ctx context.Context, state *SagaState) (
 	var id string
 
 	err := rep.pool.QueryRow(ctx, `INSERT INTO saga_states(order_id, status, current_step, payload, error)
-								  VALUES($1, $2, $3, $4, $5, $6)
+								  VALUES($1, $2, $3, $4, $5)
 								  RETURNING id`,
 					state.OrderID, state.Status, state.CurrentStep, state.Payload, state.Error).Scan(&id)
 	if err != nil{

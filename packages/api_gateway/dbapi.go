@@ -18,9 +18,21 @@ func (g *GatewayServer) sendInPostgres(ctx context.Context, order *common.Order)
 
 	var id string
 
+	tag, err := tx.Exec(ctx, `
+						INSERT INTO employees(id)
+						VALUES($1)
+						ON CONFLICT (id) DO NOTHING
+						`, order.ConfirmationEmployeeID)
+	if err != nil{
+		return "", err
+	}
+	if tag.RowsAffected() == 0 {
+		log.Println("Employee already in DB")
+	}
+
 	err = tx.QueryRow(ctx, `INSERT INTO orders(idemp_key, employee_id, department_id, status, confirmation_employee_id)
 						   VALUES($1, $2, $3, $4, $5)
-						   RETURNS id`,	
+						   RETURNING id`,	
 						   order.IdempotencyKey, order.EmployeeID, order.DepartmentID, "PENDING", order.ConfirmationEmployeeID).Scan(&id)
 	if err != nil{
 		return "", err

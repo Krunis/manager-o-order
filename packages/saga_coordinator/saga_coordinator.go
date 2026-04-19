@@ -150,6 +150,8 @@ func (s *SagaCoordinator) startSaga(order *common.Order) {
 		return
 	}
 
+	log.Printf("Saved in REPO: %s", id)
+
 	saga.ID = id
 
 	ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
@@ -177,6 +179,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 		if err != nil {
 			return s.compensate(ctx, saga, 0, err)
 		}
+		log.Printf("Confirmation SUCCESS: %s", confId)
 
 		saga.Payload.ConfirmationId = confId
 		saga.CurrentStep = 1
@@ -201,6 +204,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 			if err != nil {
 				return s.compensate(ctx, saga, 1, err)
 			}
+			log.Printf("Reserve SUCCESS: %s", id)
 		}
 
 		saga.Payload.ReserveID = id
@@ -223,6 +227,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 		if err != nil {
 			return s.compensate(ctx, saga, 2, err)
 		}
+		log.Printf("Delivery queue SUCCESS: %s", saga.OrderID)
 
 		ctxDB, cancelDB := context.WithTimeout(ctx, time.Second*1)
 		defer cancelDB()

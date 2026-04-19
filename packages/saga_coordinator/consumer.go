@@ -24,6 +24,8 @@ func (s *SagaCoordinator) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 				return nil
 			}
 
+			log.Printf("Received from Kafka: key: %s", string(msg.Key))
+
 			s.msgCh <- msg
 
 		case <-session.Context().Done():

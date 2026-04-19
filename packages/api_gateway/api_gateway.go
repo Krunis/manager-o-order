@@ -132,13 +132,13 @@ func (g *GatewayServer) NewOrderHandler(w http.ResponseWriter, r *http.Request) 
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		log.Printf("Received order: %v\n", order)
 
 		if err := ValidateOrder(order); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		log.Println("Validate success")
 
 		ctxRedis, cancel := context.WithTimeout(r.Context(), time.Second*1)
 		defer cancel()
