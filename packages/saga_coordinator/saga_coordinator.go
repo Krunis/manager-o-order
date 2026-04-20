@@ -177,7 +177,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 
 		confId, err := s.confirmation.SendConfirmation(ctxClient, saga.Payload.EmployeeID, confirmationTypes)
 		if err != nil {
-			return s.compensate(ctx, saga, 0, err)
+			return s.compensate(ctx, saga, 1, err)
 		}
 		log.Printf("Confirmation SUCCESS: %s", confId)
 
@@ -188,7 +188,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 		defer cancelDB()
 
 		if err := s.dbRepo.Update(ctxDB, saga); err != nil {
-			return s.compensate(ctx, saga, 0, err)
+			return s.compensate(ctx, saga, 1, err)
 		}
 	}
 
@@ -202,7 +202,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 		for _, item := range saga.Payload.Items {
 			id, err = s.storage.ReserveItem(ctxClient, item)
 			if err != nil {
-				return s.compensate(ctx, saga, 1, err)
+				return s.compensate(ctx, saga, 2, err)
 			}
 			log.Printf("Reserve SUCCESS: %s", id)
 		}
@@ -214,7 +214,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 		defer cancelDB()
 
 		if err := s.dbRepo.Update(ctxDB, saga); err != nil {
-			return s.compensate(ctx, saga, 1, err)
+			return s.compensate(ctx, saga, 2, err)
 		}
 
 	}
@@ -225,7 +225,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 
 		err := s.delivery.SendToQueue(ctxClient, saga.Payload.Delivery.Table)
 		if err != nil {
-			return s.compensate(ctx, saga, 2, err)
+			return s.compensate(ctx, saga, 3, err)
 		}
 		log.Printf("Delivery queue SUCCESS: %s", saga.OrderID)
 
@@ -233,7 +233,7 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 		defer cancelDB()
 
 		if err := s.dbRepo.Update(ctxDB, saga); err != nil {
-			return s.compensate(ctx, saga, 1, err)
+			return s.compensate(ctx, saga, 3, err)
 		}
 	}
 

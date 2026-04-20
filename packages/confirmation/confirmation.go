@@ -11,6 +11,8 @@ import (
 	"github.com/Krunis/manager-o-order/packages/common"
 	pb "github.com/Krunis/manager-o-order/packages/grpcapi"
 	"github.com/google/uuid"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 )
@@ -78,6 +80,9 @@ func (c *ConfirmationService) SendConfirmation(ctx context.Context, req *pb.Conf
 						VALUES($1, $2)
 						`, id, req.ConfirmationEmployeeId)
 	if err != nil {
+		if err.(*pgconn.PgError).Code == pgerrcode.ForeignKeyViolation{
+			return nil, errors.New("unknown confirmation_employee_id")
+		}
 		return nil, err
 	}
 

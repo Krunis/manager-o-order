@@ -10,7 +10,7 @@ import (
 func main() {
 	coord := sagacoordinator.NewCoordinator(common.GetDBConnectionString())
 
-	if err := coord.StartCoordinator(":8084", ":8083", ":8082", []string{"orders"}); err != nil{
+	if err := coord.StartCoordinator("confirmation:8084", "storage:8083", "delivery:8082", []string{"orders"}); err != nil{
 		log.Println(err)
 	}
 

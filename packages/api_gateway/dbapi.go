@@ -37,8 +37,9 @@ func (g *GatewayServer) sendInPostgres(ctx context.Context, order *common.Order)
 	if err != nil{
 		return "", err
 	}
-
 	log.Println("Inserted in ORDERS")
+
+	order.ID = id
 
 	key := order.EmployeeID + order.DepartmentID
 
