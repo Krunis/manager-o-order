@@ -42,10 +42,10 @@ func NewGatewayServer(port, kafkaAddress string) *GatewayServer {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &GatewayServer{
-		address:   port,
-		mux:       mux,
+		address:      port,
+		mux:          mux,
 		kafkaAddress: kafkaAddress,
-		lifecycle: common.Lifecycle{Ctx: ctx, Cancel: cancel},
+		lifecycle:    common.Lifecycle{Ctx: ctx, Cancel: cancel},
 	}
 }
 
@@ -88,6 +88,7 @@ func (g *GatewayServer) Start(dbConnectionString string) error {
 	}
 
 	g.mux.HandleFunc("/order/new", g.NewOrderHandler)
+	g.mux.HandleFunc("/item/add", g.AddItemHandler)
 
 	g.httpServer = &http.Server{}
 
@@ -108,7 +109,7 @@ func (g *GatewayServer) Start(dbConnectionString string) error {
 	select {
 	case err := <-errCh:
 		log.Printf("Error while working: %s", err)
-		
+
 		return g.Stop()
 	case <-g.lifecycle.Ctx.Done():
 		return nil
@@ -182,6 +183,32 @@ func (g *GatewayServer) NewOrderHandler(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusCreated)
 	}
 }
+
+func (g *GatewayServer) AddItemHandler(w http.ResponseWriter, r *http.Request) {
+	select {
+	case <-g.lifecycle.Ctx.Done():
+		log.Println("Request cancelled (shutdown or client disconnected)")
+		return
+	default:
+		if r.Method != "POST" {
+			http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		item := &common.Item{}
+
+		err := json.NewDecoder(r.Body).Decode(&item)
+		if err != nil{
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := ValidateItem(item); err != nil{
+			http
+		}
+	}
+}
+
 func (g *GatewayServer) Stop() error {
 	var result error
 

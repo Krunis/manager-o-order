@@ -3,6 +3,7 @@ package sagacoordinator
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/IBM/sarama"
 	"github.com/Krunis/manager-o-order/packages/common"
@@ -27,7 +28,7 @@ func (s *StorageGRPC) CancelReserve(ctx context.Context, reserveId string) error
 		return err
 	}
 	if !resp.Success{
-		return errors.New("unknown reserve_id")
+		log.Println("reserve_id does not exist")
 	}
 
 	return nil

@@ -66,12 +66,11 @@ func (c *StorageService) Start(port string) error {
 func (s *StorageService) ReserveItem(ctx context.Context, req *pb.ItemRequest) (*pb.ItemResponse, error) {
 	var id string
 
-	row := s.poolDB.QueryRow(ctx, `SELECT item_id
+	err := s.poolDB.QueryRow(ctx, `SELECT item_id
 							FROM storage
-							WHERE item_id = $1, name = $2, count <= $3
-							`, req.Id, req.Name, req.Count)
-
-	err := row.Scan(&id)
+							WHERE item_id = $1 AND item_name = $2 AND count <= $3
+							`, req.Id, req.Name, req.Count).Scan(&id)
+	log.Println("first")
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +80,7 @@ func (s *StorageService) ReserveItem(ctx context.Context, req *pb.ItemRequest) (
 	_, err = s.poolDB.Exec(ctx, `INSERT INTO reservations(id, item_id, count)
 							   VALUES($1, $2, $3)
 							   `, reserveId.String(), req.Id, req.Count)
+	log.Println("second")
 	if err != nil {
 		return nil, err
 	}

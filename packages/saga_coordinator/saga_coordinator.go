@@ -196,8 +196,10 @@ func (s *SagaCoordinator) processSaga(ctx context.Context, saga *SagaState) erro
 		var id string
 		var err error
 
-		ctxClient, cancel := context.WithTimeout(ctx, time.Second*2)
+		ctxClient, cancel := context.WithTimeout(ctx, time.Second * 8)
 		defer cancel()
+
+		log.Println(saga.Payload.Items)
 
 		for _, item := range saga.Payload.Items {
 			id, err = s.storage.ReserveItem(ctxClient, item)
@@ -257,16 +259,19 @@ func (s *SagaCoordinator) compensate(ctx context.Context, saga *SagaState, faile
 			if err != nil {
 				errs = append(errs, err)
 			}
+			log.Println("confirmation compensation end")
 		case 1: // Отмена резервации
 			err := s.storage.CancelReserve(ctx, saga.Payload.ReserveID)
 			if err != nil {
 				errs = append(errs, err)
 			}
+			log.Println("storage compensation end")
 		case 2: // Отмена доставки
 			err := s.delivery.CancelDelivery(ctx, saga.OrderID)
 			if err != nil {
 				errs = append(errs, err)
 			}
+			log.Println("delivery compensation end")
 		}
 	}
 

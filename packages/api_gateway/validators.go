@@ -21,7 +21,7 @@ func ValidateOrder(order *common.Order) error {
 	}
 
 	for _, item := range order.Items {
-		if ValidateItem(item) != "" {
+		if ValidateItem(item) != nil {
 			errorSlice = append(errorSlice, "")
 		}
 	}
@@ -47,7 +47,7 @@ func ValidateOrder(order *common.Order) error {
 	return nil
 }
 
-func ValidateItem(item *common.Item) string {
+func ValidateItem(item *common.Item) error {
 	var errorSlice []string
 
 	if strings.TrimSpace(item.ID) == "" {

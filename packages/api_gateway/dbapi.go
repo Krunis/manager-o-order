@@ -21,7 +21,6 @@ func (g *GatewayServer) sendInPostgres(ctx context.Context, order *common.Order)
 	tag, err := tx.Exec(ctx, `
 						INSERT INTO employees(id)
 						VALUES($1)
-						ON CONFLICT (id) DO NOTHING
 						`, order.ConfirmationEmployeeID)
 	if err != nil{
 		return "", err
