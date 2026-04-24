@@ -158,7 +158,7 @@ func (g *GatewayServer) NewOrderHandler(w http.ResponseWriter, r *http.Request) 
 		ctxPG, cancel := context.WithTimeout(r.Context(), time.Second*1)
 		defer cancel()
 
-		id, err := g.sendInPostgres(ctxPG, order)
+		id, err := g.sendOrderInPostgres(ctxPG, order)
 		if err != nil {
 			http.Error(w, "failed to create order", http.StatusInternalServerError)
 			return
@@ -204,8 +204,20 @@ func (g *GatewayServer) AddItemHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := ValidateItem(item); err != nil{
-			http
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), time.Second * 2)
+		defer cancel()
+
+		err = g.sendItemInPostgres(ctx, item)
+		if err != nil{
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
 	}
 }
 

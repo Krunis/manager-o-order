@@ -2,6 +2,7 @@ package apigateway
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 
@@ -21,8 +22,8 @@ func ValidateOrder(order *common.Order) error {
 	}
 
 	for _, item := range order.Items {
-		if ValidateItem(item) != nil {
-			errorSlice = append(errorSlice, "")
+		if err := ValidateItem(item); err != nil {
+			errorSlice = append(errorSlice, fmt.Sprint(err))
 		}
 	}
 
@@ -67,5 +68,5 @@ func ValidateItem(item *common.Item) error {
 		errorSlice = append(errorSlice, "item: confirmation_type is required")
 	}
 
-	return strings.Join(errorSlice, ", ")
+	return errors.New(strings.Join(errorSlice, ", "))
 }

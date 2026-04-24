@@ -3,13 +3,16 @@ package apigateway
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 
 	"github.com/Krunis/manager-o-order/packages/common"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/redis/go-redis/v9"
 )
 
-func (g *GatewayServer) sendInPostgres(ctx context.Context, order *common.Order) (string, error) {
+func (g *GatewayServer) sendOrderInPostgres(ctx context.Context, order *common.Order) (string, error) {
 	tx, err := g.poolDB.Begin(ctx)
 	if err != nil {
 		return "", err
@@ -58,6 +61,19 @@ func (g *GatewayServer) sendInPostgres(ctx context.Context, order *common.Order)
 	
 	return id, tx.Commit(ctx)
 
+}
+
+func (g *GatewayServer) sendItemInPostgres(ctx context.Context, item *common.Item) error{
+	tag, err := g.poolDB.Exec(ctx, `
+	INSERT INTO storage(item_id, item_name, count, confirmation_type)
+	VALUES($1, $2, $3, $4)`)
+	if err != nil{
+		// if err.(*pgconn.PgError).Code == pgerrcode.Dupl
+		return err
+	}
+	if tag.RowsAffected() == 0{
+		return errors.New("нихуя не поменялось почему-то")
+	}
 }
 
 func (g *GatewayServer) checkInRedis(ctx context.Context, IdempotencyKey string) (bool, error) {

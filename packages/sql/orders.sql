@@ -53,7 +53,8 @@ CREATE TABLE IF NOT EXISTS saga_states(
 CREATE TABLE IF NOT EXISTS storage(
     item_id TEXT PRIMARY KEY,
     item_name TEXT,
-    count INT
+    count INT,
+    confirmation_type TEXT
 );
 
 CREATE TABLE IF NOT EXISTS reservations(
