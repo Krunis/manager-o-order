@@ -68,5 +68,27 @@ func ValidateItem(item *common.Item) error {
 		errorSlice = append(errorSlice, "item: confirmation_type is required")
 	}
 
-	return errors.New(strings.Join(errorSlice, ", "))
+	if len(errorSlice) > 0{
+		return errors.New(strings.Join(errorSlice, ", "))
+	}
+	return nil
+}
+
+func ValidateEmployee(employee *common.Employee) error{
+	var errorSlice []string
+
+	if strings.TrimSpace(employee.ID) == ""{
+		log.Println("append id is required")
+		errorSlice = append(errorSlice, "id is required")
+	}
+	if strings.TrimSpace(employee.Department) == ""{
+		log.Println("append department is required")
+		errorSlice = append(errorSlice, "department is required")
+	}
+
+	if len(errorSlice) > 0{
+		return errors.New(strings.Join(errorSlice, ","))
+	}
+
+	return nil
 }

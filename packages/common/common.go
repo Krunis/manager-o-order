@@ -16,6 +16,11 @@ type DeliveryInformation struct {
 	Table int32 `json:"table"`
 }
 
+type Employee struct {
+	ID         string `json:"id"`
+	Department string `json:"department"`
+}
+
 type Item struct {
 	ID               string `json:"id"`
 	Name             string `json:"name"`

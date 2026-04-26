@@ -89,6 +89,7 @@ func (g *GatewayServer) Start(dbConnectionString string) error {
 
 	g.mux.HandleFunc("/order/new", g.NewOrderHandler)
 	g.mux.HandleFunc("/item/add", g.AddItemHandler)
+	g.mux.HandleFunc("/employee/add", g.AddEmployeeHandler)
 
 	g.httpServer = &http.Server{}
 
@@ -214,6 +215,42 @@ func (g *GatewayServer) AddItemHandler(w http.ResponseWriter, r *http.Request) {
 		err = g.sendItemInPostgres(ctx, item)
 		if err != nil{
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+	}
+}
+
+func (g *GatewayServer) AddEmployeeHandler(w http.ResponseWriter, r *http.Request) {
+	select {
+	case <-g.lifecycle.Ctx.Done():
+		log.Println("Request cancelled (shutdown or client disconnected)")
+		return
+	default:
+		if r.Method != "POST" {
+			http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		
+		employee := &common.Employee{}
+
+		err := json.NewDecoder(r.Body).Decode(&employee)
+		if err != nil{
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := ValidateEmployee(employee); err != nil{
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	
+		ctx, cancel := context.WithTimeout(r.Context(), time.Second * 2)
+		defer cancel()
+
+		if err := g.sendEmployeeInPostgres(ctx, employee); err != nil{
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 

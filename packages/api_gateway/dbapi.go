@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"github.com/Krunis/manager-o-order/packages/common"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
+	// "github.com/jackc/pgconn"
+	// "github.com/jackc/pgerrcode"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -65,8 +65,8 @@ func (g *GatewayServer) sendOrderInPostgres(ctx context.Context, order *common.O
 
 func (g *GatewayServer) sendItemInPostgres(ctx context.Context, item *common.Item) error{
 	tag, err := g.poolDB.Exec(ctx, `
-	INSERT INTO storage(item_id, item_name, count, confirmation_type)
-	VALUES($1, $2, $3, $4)`)
+									INSERT INTO storage(item_id, item_name, count, confirmation_type)
+									VALUES($1, $2, $3, $4)`)
 	if err != nil{
 		// if err.(*pgconn.PgError).Code == pgerrcode.Dupl
 		return err
@@ -74,6 +74,22 @@ func (g *GatewayServer) sendItemInPostgres(ctx context.Context, item *common.Ite
 	if tag.RowsAffected() == 0{
 		return errors.New("нихуя не поменялось почему-то")
 	}
+
+	return nil
+}
+
+func (g *GatewayServer) sendEmployeeInPostgres(ctx context.Context, employee *common.Employee) error{
+	tag, err := g.poolDB.Exec(ctx, `
+									INSERT INTO employees(id, department)
+									VALUES($1, $2)`, employee.ID, employee.Department)
+	if err != nil{
+		return err
+	}
+	if tag.RowsAffected() == 0{
+		return errors.New("почему то не вставился employee")
+	}
+
+	return nil
 }
 
 func (g *GatewayServer) checkInRedis(ctx context.Context, IdempotencyKey string) (bool, error) {
