@@ -66,7 +66,7 @@ func (g *GatewayServer) sendOrderInPostgres(ctx context.Context, order *common.O
 func (g *GatewayServer) sendItemInPostgres(ctx context.Context, item *common.Item) error{
 	tag, err := g.poolDB.Exec(ctx, `
 									INSERT INTO storage(item_id, item_name, count, confirmation_type)
-									VALUES($1, $2, $3, $4)`)
+									VALUES($1, $2, $3, $4)`, item.ID, item.Name, item.Count, item.ConfirmationType)
 	if err != nil{
 		// if err.(*pgconn.PgError).Code == pgerrcode.Dupl
 		return err

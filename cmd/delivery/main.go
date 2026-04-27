@@ -10,7 +10,7 @@ import (
 func main() {
 	delv := delivery.NewDeliveryService(common.GetDBConnectionString())
 
-	if err := delv.Start(":8084"); err != nil {
+	if err := delv.Start(":8082"); err != nil {
 		log.Println(err)
 	}
 }
